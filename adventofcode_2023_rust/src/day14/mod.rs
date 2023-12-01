@@ -5,11 +5,11 @@ pub fn exec(lines: Vec<String>) {
     println!("[day14][part2] = {}", part2(lines));
 }
 
-fn part1(lines: Vec<String>) -> impl Display {
+fn part1(_lines: Vec<String>) -> impl Display {
     todo!()
 }
 
-fn part2(lines: Vec<String>) -> impl Display {
+fn part2(_lines: Vec<String>) -> impl Display {
     todo!()
 }
 

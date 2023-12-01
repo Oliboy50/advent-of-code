@@ -239,7 +239,7 @@ impl Range {
     }
 }
 
-fn part1(lines: Vec<String>) -> u64 {
+fn part1(_lines: Vec<String>) -> u64 {
     let min = -50;
     let max = 50;
     let cuboids: Vec<Cuboid> = lines
@@ -273,7 +273,7 @@ fn part1(lines: Vec<String>) -> u64 {
     // active_cuboids.count()
 }
 
-fn part2(lines: Vec<String>) -> u64 {
+fn part2(_lines: Vec<String>) -> u64 {
     let cuboids: Vec<Cuboid> = lines.into_iter().map(Cuboid::from).collect();
 
     let mut min_x = 0;

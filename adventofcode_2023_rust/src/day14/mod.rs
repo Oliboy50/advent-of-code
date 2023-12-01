@@ -1,15 +1,13 @@
-use std::fmt::Display;
-
 pub fn exec(lines: Vec<String>) {
     println!("[day14][part1] = {}", part1(lines.clone()));
     println!("[day14][part2] = {}", part2(lines));
 }
 
-fn part1(_lines: Vec<String>) -> impl Display {
+fn part1(_lines: Vec<String>) -> String {
     todo!()
 }
 
-fn part2(_lines: Vec<String>) -> impl Display {
+fn part2(_lines: Vec<String>) -> String {
     todo!()
 }
 
@@ -18,5 +16,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn try_something() {}
+    fn part1_example() {}
+
+    #[test]
+    fn part2_example() {}
 }

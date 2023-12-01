@@ -16,5 +16,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn try_something() {}
+    fn part1_example() {}
+
+    #[test]
+    fn part2_example() {}
 }

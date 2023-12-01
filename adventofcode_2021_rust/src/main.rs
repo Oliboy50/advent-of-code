@@ -1,24 +1,24 @@
-#[cfg(feature = "day1")]
-mod day1;
-#[cfg(feature = "day2")]
-mod day2;
+#[cfg(feature = "day01")]
+mod day01;
+#[cfg(feature = "day02")]
+mod day02;
 #[cfg(feature = "day22")]
 mod day22;
-#[cfg(feature = "day3")]
-mod day3;
+#[cfg(feature = "day03")]
+mod day03;
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 fn main() {
-    #[cfg(feature = "day1")]
-    day1::exec();
+    #[cfg(feature = "day01")]
+    day01::exec();
 
-    #[cfg(feature = "day2")]
-    day2::exec(get_lines_from("src/day2/input"));
+    #[cfg(feature = "day02")]
+    day02::exec(get_lines_from("src/day02/input"));
 
-    #[cfg(feature = "day3")]
-    day3::exec(get_lines_from("src/day3/input"));
+    #[cfg(feature = "day03")]
+    day03::exec(get_lines_from("src/day03/input"));
 
     #[cfg(feature = "day22")]
     day22::exec(get_lines_from("src/day22/input"));

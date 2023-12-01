@@ -1,8 +1,8 @@
 ## How to
 
 ```shell
-# run the day3 exercise
-cargo run --features day3
+# run the day03 exercise
+cargo run --features day03
 
 # ...
 

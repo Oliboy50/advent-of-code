@@ -1,21 +1,21 @@
-#[cfg(feature = "day1")]
-mod day1;
-#[cfg(feature = "day2")]
-mod day2;
-#[cfg(feature = "day3")]
-mod day3;
-#[cfg(feature = "day4")]
-mod day4;
-#[cfg(feature = "day5")]
-mod day5;
-#[cfg(feature = "day6")]
-mod day6;
-#[cfg(feature = "day7")]
-mod day7;
-#[cfg(feature = "day8")]
-mod day8;
-#[cfg(feature = "day9")]
-mod day9;
+#[cfg(feature = "day01")]
+mod day01;
+#[cfg(feature = "day02")]
+mod day02;
+#[cfg(feature = "day03")]
+mod day03;
+#[cfg(feature = "day04")]
+mod day04;
+#[cfg(feature = "day05")]
+mod day05;
+#[cfg(feature = "day06")]
+mod day06;
+#[cfg(feature = "day07")]
+mod day07;
+#[cfg(feature = "day08")]
+mod day08;
+#[cfg(feature = "day09")]
+mod day09;
 #[cfg(feature = "day10")]
 mod day10;
 #[cfg(feature = "day11")]
@@ -53,32 +53,32 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 fn main() {
-    #[cfg(feature = "day1")]
-    day1::exec(get_lines_from("src/day1/input"));
+    #[cfg(feature = "day01")]
+    day01::exec(get_lines_from("src/day01/input"));
 
-    #[cfg(feature = "day2")]
-    day2::exec(get_lines_from("src/day2/input"));
+    #[cfg(feature = "day02")]
+    day02::exec(get_lines_from("src/day02/input"));
 
-    #[cfg(feature = "day3")]
-    day3::exec(get_lines_from("src/day3/input"));
+    #[cfg(feature = "day03")]
+    day03::exec(get_lines_from("src/day03/input"));
 
-    #[cfg(feature = "day4")]
-    day4::exec(get_lines_from("src/day4/input"));
+    #[cfg(feature = "day04")]
+    day04::exec(get_lines_from("src/day04/input"));
 
-    #[cfg(feature = "day5")]
-    day5::exec(get_lines_from("src/day5/input"));
+    #[cfg(feature = "day05")]
+    day05::exec(get_lines_from("src/day05/input"));
 
-    #[cfg(feature = "day6")]
-    day6::exec(get_lines_from("src/day6/input"));
+    #[cfg(feature = "day06")]
+    day06::exec(get_lines_from("src/day06/input"));
 
-    #[cfg(feature = "day7")]
-    day7::exec(get_lines_from("src/day7/input"));
+    #[cfg(feature = "day07")]
+    day07::exec(get_lines_from("src/day07/input"));
 
-    #[cfg(feature = "day8")]
-    day8::exec(get_lines_from("src/day8/input"));
+    #[cfg(feature = "day08")]
+    day08::exec(get_lines_from("src/day08/input"));
 
-    #[cfg(feature = "day9")]
-    day9::exec(get_lines_from("src/day9/input"));
+    #[cfg(feature = "day09")]
+    day09::exec(get_lines_from("src/day09/input"));
 
     #[cfg(feature = "day10")]
     day10::exec(get_lines_from("src/day10/input"));

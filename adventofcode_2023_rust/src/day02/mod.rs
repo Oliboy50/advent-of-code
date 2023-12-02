@@ -12,20 +12,20 @@ fn part1(lines: Vec<String>) -> String {
         .filter_map(|game_info| {
             let mut is_allowed = true;
             for handful_of_cubes in game_info.handfuls_of_cubes {
-                for cube in handful_of_cubes.list_of_cubes {
-                    match cube {
+                for cubes in handful_of_cubes.list_of_cubes {
+                    match cubes {
                         Cubes::Red(number) => {
-                            if number > MAX_CUBES_RED {
+                            if number > 12 {
                                 is_allowed = false
                             }
                         }
                         Cubes::Green(number) => {
-                            if number > MAX_CUBES_GREEN {
+                            if number > 13 {
                                 is_allowed = false
                             }
                         }
                         Cubes::Blue(number) => {
-                            if number > MAX_CUBES_BLUE {
+                            if number > 14 {
                                 is_allowed = false
                             }
                         }
@@ -52,8 +52,8 @@ fn part2(lines: Vec<String>) -> String {
             let mut max_green = 0;
             let mut max_blue = 0;
             for handful_of_cubes in game_info.handfuls_of_cubes {
-                for cube in handful_of_cubes.list_of_cubes {
-                    match cube {
+                for cubes in handful_of_cubes.list_of_cubes {
+                    match cubes {
                         Cubes::Red(number) => {
                             if number > max_red {
                                 max_red = number
@@ -77,10 +77,6 @@ fn part2(lines: Vec<String>) -> String {
         .sum::<u64>()
         .to_string()
 }
-
-const MAX_CUBES_RED: u16 = 12;
-const MAX_CUBES_GREEN: u16 = 13;
-const MAX_CUBES_BLUE: u16 = 14;
 
 #[derive(Debug, Clone, PartialEq)]
 struct GameInfo {

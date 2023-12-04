@@ -19,7 +19,7 @@ fn part1(lines: Vec<String>) -> String {
             Some(lines[index + 1].clone())
         };
 
-        numbers.push(get_numbers_from_line(Line {
+        numbers.push(part1_get_numbers_from_line(Line {
             previous: previous_line,
             current: line.clone(),
             next: next_line,
@@ -35,8 +35,34 @@ fn part1(lines: Vec<String>) -> String {
         .to_string()
 }
 
-fn part2(_lines: Vec<String>) -> String {
-    todo!()
+fn part2(lines: Vec<String>) -> String {
+    let mut gears = Vec::default();
+    for (index, line) in lines.iter().enumerate() {
+        let previous_line = if index == 0 {
+            None
+        } else {
+            Some(lines[index - 1].clone())
+        };
+        let next_line = if index == lines.len() - 1 {
+            None
+        } else {
+            Some(lines[index + 1].clone())
+        };
+
+        gears.push(part2_get_gears_from_line(Line {
+            previous: previous_line,
+            current: line.clone(),
+            next: next_line,
+        }));
+    }
+
+    gears
+        .iter()
+        .flatten()
+        .filter(|g| g.numbers.len() == 2)
+        .map(|g| g.numbers[0].value * g.numbers[1].value)
+        .sum::<u64>()
+        .to_string()
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -47,20 +73,20 @@ struct Line {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-struct SymbolHorizontalBlastRadius {
+struct Part1SymbolHorizontalBlastRadius {
     start_index: u32,
     end_index: u32,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-struct Number {
+struct Part1Number {
     start_index: u32,
     end_index: u32,
     value: u64,
     is_closed_to_symbol: bool,
 }
 
-fn get_symbols_blast_radius_from_line(line: &str) -> Vec<SymbolHorizontalBlastRadius> {
+fn part1_get_symbols_blast_radius_from_line(line: &str) -> Vec<Part1SymbolHorizontalBlastRadius> {
     let mut result = vec![];
     let regex_for_symbols = Regex::new(r"(?<symbol>[^0-9.]+)*").unwrap();
 
@@ -71,7 +97,7 @@ fn get_symbols_blast_radius_from_line(line: &str) -> Vec<SymbolHorizontalBlastRa
 
         let start = symbol.start() as u32;
         let end = symbol.end() as u32;
-        result.push(SymbolHorizontalBlastRadius {
+        result.push(Part1SymbolHorizontalBlastRadius {
             start_index: start.saturating_sub(1),
             end_index: end.saturating_add(1),
         });
@@ -80,7 +106,7 @@ fn get_symbols_blast_radius_from_line(line: &str) -> Vec<SymbolHorizontalBlastRa
     result
 }
 
-fn get_numbers_from_line(line: Line) -> Vec<Number> {
+fn part1_get_numbers_from_line(line: Line) -> Vec<Part1Number> {
     let mut result = vec![];
     let regex_for_numbers = Regex::new(r"(?<number>[0-9]+)*").unwrap();
 
@@ -91,28 +117,33 @@ fn get_numbers_from_line(line: Line) -> Vec<Number> {
         let start_index = number.start() as u32;
         let end_index = number.end() as u32;
 
-        result.push(Number {
+        result.push(Part1Number {
             start_index,
             end_index,
             value: number.as_str().parse::<u64>().unwrap(),
-            is_closed_to_symbol: is_number_closed_to_symbol(&line, start_index, end_index),
+            is_closed_to_symbol: part1_is_number_closed_to_symbol(&line, start_index, end_index),
         });
     }
 
     result
 }
 
-fn is_number_closed_to_symbol(line: &Line, number_start_index: u32, number_end_index: u32) -> bool {
+fn part1_is_number_closed_to_symbol(
+    line: &Line,
+    number_start_index: u32,
+    number_end_index: u32,
+) -> bool {
     let mut result = false;
 
-    let symbols_blast_radius_for_current_line = get_symbols_blast_radius_from_line(&line.current);
+    let symbols_blast_radius_for_current_line =
+        part1_get_symbols_blast_radius_from_line(&line.current);
     let symbols_blast_radius_for_previous_line = if let Some(previous_line) = &line.previous {
-        get_symbols_blast_radius_from_line(previous_line)
+        part1_get_symbols_blast_radius_from_line(previous_line)
     } else {
         vec![]
     };
     let symbols_blast_radius_for_next_line = if let Some(next_line) = &line.next {
-        get_symbols_blast_radius_from_line(next_line)
+        part1_get_symbols_blast_radius_from_line(next_line)
     } else {
         vec![]
     };
@@ -128,6 +159,99 @@ fn is_number_closed_to_symbol(line: &Line, number_start_index: u32, number_end_i
         {
             result = true;
             break;
+        }
+    }
+
+    result
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct Part2Gear {
+    start_index: u32,
+    end_index: u32,
+    numbers: Vec<Part2Number>,
+}
+
+#[derive(Debug, Clone, PartialEq, Copy)]
+struct Part2Number {
+    start_index: u32,
+    end_index: u32,
+    value: u64,
+}
+
+fn part2_get_numbers_from_line(line: &str) -> Vec<Part2Number> {
+    let mut result = vec![];
+    let regex_for_numbers = Regex::new(r"(?<number>[0-9]+)*").unwrap();
+
+    for captures in regex_for_numbers.captures_iter(line) {
+        let Some(number) = captures.name("number") else {
+            continue;
+        };
+        let start_index = number.start() as u32;
+        let end_index = number.end() as u32;
+
+        result.push(Part2Number {
+            start_index,
+            end_index,
+            value: number.as_str().parse::<u64>().unwrap(),
+        });
+    }
+
+    result
+}
+
+fn part2_get_gears_from_line(line: Line) -> Vec<Part2Gear> {
+    let mut result = vec![];
+    let regex_for_symbols = Regex::new(r"(?<symbol>\*)*").unwrap();
+
+    for captures in regex_for_symbols.captures_iter(&line.current) {
+        let Some(symbol) = captures.name("symbol") else {
+            continue;
+        };
+
+        let start = symbol.start() as u32;
+        let start_index = start.saturating_sub(1);
+        let end = symbol.end() as u32;
+        let end_index = end.saturating_add(1);
+        result.push(Part2Gear {
+            start_index,
+            end_index,
+            numbers: part2_get_numbers_closed_to_gear(&line, start_index, end_index),
+        });
+    }
+
+    result
+}
+
+fn part2_get_numbers_closed_to_gear(
+    line: &Line,
+    gear_start_index: u32,
+    gear_end_index: u32,
+) -> Vec<Part2Number> {
+    let mut result = Vec::default();
+
+    let numbers_for_current_line = part2_get_numbers_from_line(&line.current);
+    let numbers_for_previous_line = if let Some(previous_line) = &line.previous {
+        part2_get_numbers_from_line(previous_line)
+    } else {
+        vec![]
+    };
+    let numbers_for_next_line = if let Some(next_line) = &line.next {
+        part2_get_numbers_from_line(next_line)
+    } else {
+        vec![]
+    };
+
+    for number in numbers_for_current_line
+        .iter()
+        .chain(numbers_for_previous_line.iter())
+        .chain(numbers_for_next_line.iter())
+    {
+        let blast_radius = gear_start_index..gear_end_index;
+        if blast_radius.contains(&number.start_index)
+            || blast_radius.contains(&(number.end_index - 1))
+        {
+            result.push(*number);
         }
     }
 
@@ -248,38 +372,38 @@ mod tests {
     }
 
     #[test]
-    fn get_symbols_blast_radius_from_line_success() {
+    fn part1_get_symbols_blast_radius_from_line_success() {
         for (input, expected) in [
             ("467..114..", vec![]),
             ("..35..6335", vec![]),
             (
                 "...*......",
-                vec![SymbolHorizontalBlastRadius {
+                vec![Part1SymbolHorizontalBlastRadius {
                     start_index: 2,
                     end_index: 5,
                 }],
             ),
             (
                 "......#...",
-                vec![SymbolHorizontalBlastRadius {
+                vec![Part1SymbolHorizontalBlastRadius {
                     start_index: 5,
                     end_index: 8,
                 }],
             ),
             (
                 "617*......",
-                vec![SymbolHorizontalBlastRadius {
+                vec![Part1SymbolHorizontalBlastRadius {
                     start_index: 2,
                     end_index: 5,
                 }],
             ),
         ] {
-            assert_eq!(get_symbols_blast_radius_from_line(input), expected);
+            assert_eq!(part1_get_symbols_blast_radius_from_line(input), expected);
         }
     }
 
     #[test]
-    fn get_numbers_from_line_success() {
+    fn part1_get_numbers_from_line_success() {
         for (input, expected) in [
             (
                 Line {
@@ -296,13 +420,13 @@ mod tests {
                     next: None,
                 },
                 vec![
-                    Number {
+                    Part1Number {
                         start_index: 0,
                         end_index: 3,
                         value: 467,
                         is_closed_to_symbol: true,
                     },
-                    Number {
+                    Part1Number {
                         start_index: 5,
                         end_index: 8,
                         value: 114,
@@ -317,13 +441,13 @@ mod tests {
                     next: Some("***.......".to_string()),
                 },
                 vec![
-                    Number {
+                    Part1Number {
                         start_index: 2,
                         end_index: 4,
                         value: 35,
                         is_closed_to_symbol: true,
                     },
-                    Number {
+                    Part1Number {
                         start_index: 6,
                         end_index: 9,
                         value: 633,
@@ -337,7 +461,7 @@ mod tests {
                     current: "617.......".to_string(),
                     next: None,
                 },
-                vec![Number {
+                vec![Part1Number {
                     start_index: 0,
                     end_index: 3,
                     value: 617,
@@ -351,13 +475,13 @@ mod tests {
                     next: Some("...............".to_string()),
                 },
                 vec![
-                    Number {
+                    Part1Number {
                         start_index: 7,
                         end_index: 10,
                         value: 298,
                         is_closed_to_symbol: false,
                     },
-                    Number {
+                    Part1Number {
                         start_index: 12,
                         end_index: 14,
                         value: 86,
@@ -366,10 +490,57 @@ mod tests {
                 ],
             ),
         ] {
-            assert_eq!(get_numbers_from_line(input), expected);
+            assert_eq!(part1_get_numbers_from_line(input), expected);
         }
     }
 
     #[test]
-    fn part2_example() {}
+    fn part2_example() {
+        let lines = vec![
+            "467..114..",
+            "...*......",
+            "..35..633.",
+            "......#...",
+            "617*......",
+            ".....+.58.",
+            "..592.....",
+            "......755.",
+            "...$.*....",
+            ".664.598..",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(
+            part2(lines),
+            "467835" // (467 * 35) + (755 * 598)
+        );
+    }
+
+    #[test]
+    fn part2_more_cases() {
+        let lines = vec![
+            ".....$.*..........",
+            "617*..............",
+            "664.598...........",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(part2(lines), "0");
+    }
+
+    #[test]
+    fn part2_more_cases_2() {
+        let lines = vec![
+            "...............",
+            "...............",
+            "...709.....*...",
+            ".......298..86.",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(part2(lines), "0");
+    }
 }

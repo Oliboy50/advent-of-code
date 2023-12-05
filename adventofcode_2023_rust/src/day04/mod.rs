@@ -9,14 +9,41 @@ fn part1(lines: Vec<String>) -> String {
     lines
         .iter()
         .map(|line| get_card_from_line(line))
-        .map(|card| get_numbers_that_are_in_both_lists(card.winning_numbers, card.player_numbers))
+        .map(|card| get_numbers_that_are_in_both_lists(&card.winning_numbers, &card.player_numbers))
         .map(compute_points_for_numbers)
         .sum::<u64>()
         .to_string()
 }
 
-fn part2(_lines: Vec<String>) -> String {
-    todo!()
+fn part2(lines: Vec<String>) -> String {
+    let original_cards = lines
+        .iter()
+        .map(|line| get_card_from_line(line))
+        .collect::<Vec<Card>>();
+
+    part2_recursive_number_of_cards_won(&original_cards, original_cards.as_slice()).to_string()
+}
+
+fn part2_recursive_number_of_cards_won(original_cards: &[Card], cards: &[Card]) -> u64 {
+    let mut number_of_cards = cards.len() as u64;
+
+    for card in cards {
+        let number_of_next_cards_to_win =
+            get_numbers_that_are_in_both_lists(&card.winning_numbers, &card.player_numbers).len()
+                as u16;
+
+        for i in 1..=number_of_next_cards_to_win {
+            let next_card_id = card.id + i;
+            let Some(next_card) = original_cards.iter().find(|card| card.id == next_card_id) else {
+                continue;
+            };
+
+            number_of_cards +=
+                part2_recursive_number_of_cards_won(original_cards, &[next_card.clone()]);
+        }
+    }
+
+    number_of_cards
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -67,8 +94,12 @@ fn get_card_from_line(line: &str) -> Card {
     }
 }
 
-fn get_numbers_that_are_in_both_lists(list1: Vec<u16>, list2: Vec<u16>) -> Vec<u16> {
-    list2.into_iter().filter(|n| list1.contains(n)).collect()
+fn get_numbers_that_are_in_both_lists(list1: &[u16], list2: &[u16]) -> Vec<u16> {
+    list2
+        .iter()
+        .filter(|n| list1.contains(n))
+        .map(Clone::clone)
+        .collect()
 }
 
 fn compute_points_for_numbers(numbers: Vec<u16>) -> u64 {
@@ -114,8 +145,8 @@ mod tests {
     fn get_numbers_that_are_in_both_lists_success() {
         assert_eq!(
             get_numbers_that_are_in_both_lists(
-                vec![41, 48, 83, 86, 17],
-                vec![83, 86, 6, 31, 17, 9, 48, 53]
+                &[41, 48, 83, 86, 17],
+                &[83, 86, 6, 31, 17, 9, 48, 53]
             ),
             vec![83, 86, 17, 48]
         );
@@ -127,5 +158,18 @@ mod tests {
     }
 
     #[test]
-    fn part2_example() {}
+    fn part2_example() {
+        let lines = vec![
+            "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53",
+            "Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19",
+            "Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1",
+            "Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83",
+            "Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36",
+            "Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(part2(lines), "30");
+    }
 }

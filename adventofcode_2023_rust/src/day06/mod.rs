@@ -12,31 +12,45 @@ fn part1(lines: Vec<String>) -> String {
         .to_string()
 }
 
-fn part2(_lines: Vec<String>) -> String {
-    todo!()
+fn part2(lines: Vec<String>) -> String {
+    let race = get_races(lines)
+        .into_iter()
+        .reduce(|acc, race| Race {
+            max_time_in_ms: format!("{}{}", acc.max_time_in_ms, race.max_time_in_ms)
+                .parse()
+                .unwrap(),
+            min_distance_in_ms: format!("{}{}", acc.min_distance_in_ms, race.min_distance_in_ms)
+                .parse()
+                .unwrap(),
+        })
+        .unwrap();
+
+    let number_of_ways_to_win =
+        get_winning_durations_in_ms(race.max_time_in_ms, race.min_distance_in_ms).len();
+    number_of_ways_to_win.to_string()
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct Race {
-    max_time_in_ms: u16,
-    min_distance_in_ms: u16,
+    max_time_in_ms: u64,
+    min_distance_in_ms: u64,
 }
 
 fn get_races(lines: Vec<String>) -> Vec<Race> {
     let mut input = lines.iter();
-    let times: Vec<u16> = input
+    let times: Vec<u64> = input
         .next()
         .unwrap()
         .split_whitespace()
         .skip(1)
-        .map(|s| s.parse::<u16>().unwrap())
+        .map(|s| s.parse::<u64>().unwrap())
         .collect();
-    let distances: Vec<u16> = input
+    let distances: Vec<u64> = input
         .next()
         .unwrap()
         .split_whitespace()
         .skip(1)
-        .map(|s| s.parse::<u16>().unwrap())
+        .map(|s| s.parse::<u64>().unwrap())
         .collect();
 
     times
@@ -49,7 +63,7 @@ fn get_races(lines: Vec<String>) -> Vec<Race> {
         .collect()
 }
 
-fn get_winning_durations_in_ms(max_time_in_ms: u16, min_distance_in_ms: u16) -> Vec<u16> {
+fn get_winning_durations_in_ms(max_time_in_ms: u64, min_distance_in_ms: u64) -> Vec<u64> {
     let mut winning_durations_in_ms = vec![];
     for duration_in_ms in 1..max_time_in_ms {
         let distance_in_ms = duration_in_ms * (max_time_in_ms - duration_in_ms);
@@ -110,8 +124,8 @@ mod tests {
 
     #[test]
     fn get_winning_durations_in_ms_success() {
-        let max_time_in_ms = 7u16;
-        let min_distance_in_ms = 9u16;
+        let max_time_in_ms = 7u64;
+        let min_distance_in_ms = 9u64;
         assert_eq!(
             get_winning_durations_in_ms(max_time_in_ms, min_distance_in_ms),
             vec![2, 3, 4, 5]
@@ -119,5 +133,16 @@ mod tests {
     }
 
     #[test]
-    fn part2_example() {}
+    fn part2_example() {
+        let lines = vec![
+            // Time
+            "Time:      7  15   30",
+            // Distance
+            "Distance:  9  40  200",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(part2(lines), "71503");
+    }
 }

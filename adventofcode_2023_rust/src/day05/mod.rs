@@ -174,8 +174,77 @@ fn get_humidity_to_location_map(lines: &[String]) -> Map {
     get_map("humidity-to-location", lines)
 }
 
-fn part2(_lines: Vec<String>) -> String {
-    todo!()
+fn part2(lines: Vec<String>) -> String {
+    let seed_ids = get_seed_ids_from_ranges(&lines);
+    let seed_to_soil_map = get_seed_to_soil_map(&lines);
+    let soil_to_fertilizer_map = get_soil_to_fertilizer_map(&lines);
+    let fertilizer_to_water_map = get_fertilizer_to_water_map(&lines);
+    let water_to_light_map = get_water_to_light_map(&lines);
+    let light_to_temperature_map = get_light_to_temperature_map(&lines);
+    let temperature_to_humidity_map = get_temperature_to_humidity_map(&lines);
+    let humidity_to_location_map = get_humidity_to_location_map(&lines);
+
+    println!("Computing each seed location...");
+
+    seed_ids
+        .into_iter()
+        .map(|id| {
+            get_seed_from_maps(
+                id,
+                &seed_to_soil_map,
+                &soil_to_fertilizer_map,
+                &fertilizer_to_water_map,
+                &water_to_light_map,
+                &light_to_temperature_map,
+                &temperature_to_humidity_map,
+                &humidity_to_location_map,
+            )
+        })
+        .fold(
+            u64::MAX,
+            |acc, Seed { location, .. }| {
+                if location < acc {
+                    location
+                } else {
+                    acc
+                }
+            },
+        )
+        .to_string()
+}
+
+fn get_seed_ids_from_ranges(lines: &[String]) -> Vec<u64> {
+    let numbers: &str = lines[0].split(": ").collect::<Vec<_>>()[1];
+    let numbers = numbers
+        .split_whitespace()
+        .map(|number| number.parse().unwrap())
+        .collect::<Vec<u64>>();
+
+    // get vec capacity to allocate once
+    let mut vec_capacity = 0;
+    let num = numbers.clone();
+    let mut num = num.iter();
+    for _ in 0..(num.len() / 2) {
+        num.next();
+        let range_length = num.next().unwrap();
+
+        vec_capacity += *range_length as usize;
+    }
+
+    println!("{vec_capacity} seeds will be processed...");
+
+    let mut result = Vec::with_capacity(vec_capacity);
+    let mut numbers = numbers.iter();
+    for _ in 0..(numbers.len() / 2) {
+        let start_id = numbers.next().unwrap();
+        let range_length = numbers.next().unwrap();
+
+        for id in *start_id..(start_id + range_length) {
+            result.push(id);
+        }
+    }
+
+    result
 }
 
 #[cfg(test)]
@@ -498,5 +567,60 @@ mod tests {
     }
 
     #[test]
-    fn part2_example() {}
+    fn part2_example() {
+        let lines = vec![
+            "seeds: 79 14 55 13",
+            "",
+            "seed-to-soil map:",
+            "50 98 2",
+            "52 50 48",
+            "",
+            "soil-to-fertilizer map:",
+            "0 15 37",
+            "37 52 2",
+            "39 0 15",
+            "",
+            "fertilizer-to-water map:",
+            "49 53 8",
+            "0 11 42",
+            "42 0 7",
+            "57 7 4",
+            "",
+            "water-to-light map:",
+            "88 18 7",
+            "18 25 70",
+            "",
+            "light-to-temperature map:",
+            "45 77 23",
+            "81 45 19",
+            "68 64 13",
+            "",
+            "temperature-to-humidity map:",
+            "0 69 1",
+            "1 0 69",
+            "",
+            "humidity-to-location map:",
+            "60 56 37",
+            "56 93 4",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(part2(lines), "46");
+    }
+
+    #[test]
+    fn get_seed_ids_from_ranges_success() {
+        let lines = ["seeds: 79 14 55 13", ""]
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect::<Vec<String>>();
+        assert_eq!(
+            get_seed_ids_from_ranges(&lines),
+            vec![
+                79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 55, 56, 57, 58, 59, 60, 61,
+                62, 63, 64, 65, 66, 67
+            ]
+        );
+    }
 }

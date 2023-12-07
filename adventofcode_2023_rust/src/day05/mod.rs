@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 pub fn exec(lines: Vec<String>) {
     println!("[day05][part1] = {}", part1(lines.clone()));
     println!("[day05][part2] = {}", part2(lines));
@@ -187,7 +189,7 @@ fn part2(lines: Vec<String>) -> String {
     println!("Computing each seed location...");
 
     seed_ids
-        .into_iter()
+        .into_par_iter()
         .map(|id| {
             get_seed_from_maps(
                 id,
@@ -200,9 +202,10 @@ fn part2(lines: Vec<String>) -> String {
                 &humidity_to_location_map,
             )
         })
-        .fold(
-            u64::MAX,
-            |acc, Seed { location, .. }| {
+        .map(|seed| seed.location)
+        .reduce(
+            || u64::MAX,
+            |acc, location| {
                 if location < acc {
                     location
                 } else {

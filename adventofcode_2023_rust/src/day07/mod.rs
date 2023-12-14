@@ -41,8 +41,8 @@ enum Card {
 
 impl PartialOrd for Card {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        let self_card_value = self.as_u8_for_sorting();
-        let other_card_value = other.as_u8_for_sorting();
+        let self_card_value = self.get_weight_for_sorting();
+        let other_card_value = other.get_weight_for_sorting();
 
         if self_card_value > other_card_value {
             Some(Ordering::Greater)
@@ -55,7 +55,7 @@ impl PartialOrd for Card {
 }
 
 impl Card {
-    fn as_u8_for_sorting(&self) -> u8 {
+    fn get_weight_for_sorting(&self) -> u8 {
         match self {
             Card::As => 14,
             Card::King => 13,
@@ -70,6 +70,46 @@ impl Card {
             Card::Four => 4,
             Card::Three => 3,
             Card::Two => 2,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Ord)]
+enum HandType {
+    FiveOfAKind,
+    FourOfAKind,
+    FullHouse,
+    ThreeOfAKind,
+    TwoPair,
+    OnePair,
+    HighCard,
+}
+
+impl PartialOrd for HandType {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        let self_value = self.get_weight_for_sorting();
+        let other_value = other.get_weight_for_sorting();
+
+        if self_value > other_value {
+            Some(Ordering::Greater)
+        } else if self_value < other_value {
+            Some(Ordering::Less)
+        } else {
+            Some(Ordering::Equal)
+        }
+    }
+}
+
+impl HandType {
+    fn get_weight_for_sorting(&self) -> u8 {
+        match self {
+            HandType::FiveOfAKind => 7,
+            HandType::FourOfAKind => 6,
+            HandType::FullHouse => 5,
+            HandType::ThreeOfAKind => 4,
+            HandType::TwoPair => 3,
+            HandType::OnePair => 2,
+            HandType::HighCard => 1,
         }
     }
 }
@@ -101,6 +141,15 @@ impl IntoIterator for Hand {
 
 impl PartialOrd for Hand {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        let self_type_value = self.get_type().get_weight_for_sorting();
+        let other_type_value = other.get_type().get_weight_for_sorting();
+
+        if self_type_value > other_type_value {
+            return Some(Ordering::Greater);
+        } else if self_type_value < other_type_value {
+            return Some(Ordering::Less);
+        }
+
         let self_cards = self.into_iter();
         let other_cards = other.into_iter();
 
@@ -132,30 +181,37 @@ impl Hand {
     fn fifth_card(&self) -> Card {
         self.0 .4
     }
+
+    fn get_type(&self) -> HandType {
+        let hand = *self;
+        if hand_is_five_of_a_kind(hand) {
+            HandType::FiveOfAKind
+        } else if hand_is_four_of_a_kind(hand) {
+            HandType::FourOfAKind
+        } else if hand_is_full_house(hand) {
+            HandType::FullHouse
+        } else if hand_is_three_of_a_kind(hand) {
+            HandType::ThreeOfAKind
+        } else if hand_is_two_pair(hand) {
+            HandType::TwoPair
+        } else if hand_is_one_pair(hand) {
+            HandType::OnePair
+        } else if hand_is_high_card(hand) {
+            HandType::HighCard
+        } else {
+            panic!("Unsupported hand");
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Ord)]
-enum HandWithBid {
-    FiveOfAKind { hand: Hand, bid: u16 },
-    FourOfAKind { hand: Hand, bid: u16 },
-    FullHouse { hand: Hand, bid: u16 },
-    ThreeOfAKind { hand: Hand, bid: u16 },
-    TwoPair { hand: Hand, bid: u16 },
-    OnePair { hand: Hand, bid: u16 },
-    HighCard { hand: Hand, bid: u16 },
+struct HandWithBid {
+    hand: Hand,
+    bid: u16,
 }
 
 impl PartialOrd for HandWithBid {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        let self_hand_type_value = self.as_u8_for_sorting();
-        let other_hand_type_value = other.as_u8_for_sorting();
-
-        if self_hand_type_value > other_hand_type_value {
-            return Some(Ordering::Greater);
-        } else if self_hand_type_value < other_hand_type_value {
-            return Some(Ordering::Less);
-        }
-
         let self_hand = self.get_hand();
         let other_hand = other.get_hand();
         if self_hand > other_hand {
@@ -169,40 +225,11 @@ impl PartialOrd for HandWithBid {
 }
 
 impl HandWithBid {
-    fn as_u8_for_sorting(&self) -> u8 {
-        match self {
-            HandWithBid::FiveOfAKind { .. } => 7,
-            HandWithBid::FourOfAKind { .. } => 6,
-            HandWithBid::FullHouse { .. } => 5,
-            HandWithBid::ThreeOfAKind { .. } => 4,
-            HandWithBid::TwoPair { .. } => 3,
-            HandWithBid::OnePair { .. } => 2,
-            HandWithBid::HighCard { .. } => 1,
-        }
-    }
-
     fn get_hand(&self) -> Hand {
-        *match self {
-            HandWithBid::FiveOfAKind { hand, .. } => hand,
-            HandWithBid::FourOfAKind { hand, .. } => hand,
-            HandWithBid::FullHouse { hand, .. } => hand,
-            HandWithBid::ThreeOfAKind { hand, .. } => hand,
-            HandWithBid::TwoPair { hand, .. } => hand,
-            HandWithBid::OnePair { hand, .. } => hand,
-            HandWithBid::HighCard { hand, .. } => hand,
-        }
+        self.hand
     }
-
     fn get_bid(&self) -> u16 {
-        *match self {
-            HandWithBid::FiveOfAKind { bid, .. } => bid,
-            HandWithBid::FourOfAKind { bid, .. } => bid,
-            HandWithBid::FullHouse { bid, .. } => bid,
-            HandWithBid::ThreeOfAKind { bid, .. } => bid,
-            HandWithBid::TwoPair { bid, .. } => bid,
-            HandWithBid::OnePair { bid, .. } => bid,
-            HandWithBid::HighCard { bid, .. } => bid,
-        }
+        self.bid
     }
 }
 
@@ -234,40 +261,20 @@ fn get_hands_with_bids(lines: &[String]) -> Vec<HandWithBid> {
                 .collect::<Hand>();
             let bid = split.next().unwrap().parse::<u16>().unwrap();
 
-            build_hand_with_bid(hand, bid)
+            HandWithBid { hand, bid }
         })
         .collect()
 }
 
-fn build_hand_with_bid(hand: Hand, bid: u16) -> HandWithBid {
-    if cards_is_five_of_a_kind(hand) {
-        HandWithBid::FiveOfAKind { hand, bid }
-    } else if cards_is_four_of_a_kind(hand) {
-        HandWithBid::FourOfAKind { hand, bid }
-    } else if cards_is_full_house(hand) {
-        HandWithBid::FullHouse { hand, bid }
-    } else if cards_is_three_of_a_kind(hand) {
-        HandWithBid::ThreeOfAKind { hand, bid }
-    } else if cards_is_two_pair(hand) {
-        HandWithBid::TwoPair { hand, bid }
-    } else if cards_is_one_pair(hand) {
-        HandWithBid::OnePair { hand, bid }
-    } else if cards_is_high_card(hand) {
-        HandWithBid::HighCard { hand, bid }
-    } else {
-        panic!("Unsupported hand");
-    }
-}
-
-fn cards_is_five_of_a_kind(hand: Hand) -> bool {
+fn hand_is_five_of_a_kind(hand: Hand) -> bool {
     hand.first_card() == hand.second_card()
         && hand.second_card() == hand.third_card()
         && hand.third_card() == hand.fourth_card()
         && hand.fourth_card() == hand.fifth_card()
 }
 
-fn cards_is_four_of_a_kind(hand: Hand) -> bool {
-    if cards_is_five_of_a_kind(hand) {
+fn hand_is_four_of_a_kind(hand: Hand) -> bool {
+    if hand_is_five_of_a_kind(hand) {
         return false;
     }
 
@@ -288,11 +295,11 @@ fn cards_is_four_of_a_kind(hand: Hand) -> bool {
             && hand.fourth_card() == hand.fifth_card())
 }
 
-fn cards_is_full_house(hand: Hand) -> bool {
-    if cards_is_five_of_a_kind(hand) {
+fn hand_is_full_house(hand: Hand) -> bool {
+    if hand_is_five_of_a_kind(hand) {
         return false;
     }
-    if cards_is_four_of_a_kind(hand) {
+    if hand_is_four_of_a_kind(hand) {
         return false;
     }
 
@@ -328,14 +335,14 @@ fn cards_is_full_house(hand: Hand) -> bool {
             && hand.first_card() == hand.second_card())
 }
 
-fn cards_is_three_of_a_kind(hand: Hand) -> bool {
-    if cards_is_five_of_a_kind(hand) {
+fn hand_is_three_of_a_kind(hand: Hand) -> bool {
+    if hand_is_five_of_a_kind(hand) {
         return false;
     }
-    if cards_is_four_of_a_kind(hand) {
+    if hand_is_four_of_a_kind(hand) {
         return false;
     }
-    if cards_is_full_house(hand) {
+    if hand_is_full_house(hand) {
         return false;
     }
 
@@ -351,17 +358,17 @@ fn cards_is_three_of_a_kind(hand: Hand) -> bool {
         || (hand.third_card() == hand.fourth_card() && hand.fourth_card() == hand.fifth_card())
 }
 
-fn cards_is_two_pair(hand: Hand) -> bool {
-    if cards_is_five_of_a_kind(hand) {
+fn hand_is_two_pair(hand: Hand) -> bool {
+    if hand_is_five_of_a_kind(hand) {
         return false;
     }
-    if cards_is_four_of_a_kind(hand) {
+    if hand_is_four_of_a_kind(hand) {
         return false;
     }
-    if cards_is_full_house(hand) {
+    if hand_is_full_house(hand) {
         return false;
     }
-    if cards_is_three_of_a_kind(hand) {
+    if hand_is_three_of_a_kind(hand) {
         return false;
     }
 
@@ -382,20 +389,20 @@ fn cards_is_two_pair(hand: Hand) -> bool {
         || (hand.second_card() == hand.fifth_card() && hand.third_card() == hand.fourth_card())
 }
 
-fn cards_is_one_pair(hand: Hand) -> bool {
-    if cards_is_five_of_a_kind(hand) {
+fn hand_is_one_pair(hand: Hand) -> bool {
+    if hand_is_five_of_a_kind(hand) {
         return false;
     }
-    if cards_is_four_of_a_kind(hand) {
+    if hand_is_four_of_a_kind(hand) {
         return false;
     }
-    if cards_is_full_house(hand) {
+    if hand_is_full_house(hand) {
         return false;
     }
-    if cards_is_three_of_a_kind(hand) {
+    if hand_is_three_of_a_kind(hand) {
         return false;
     }
-    if cards_is_two_pair(hand) {
+    if hand_is_two_pair(hand) {
         return false;
     }
 
@@ -411,23 +418,23 @@ fn cards_is_one_pair(hand: Hand) -> bool {
         || (hand.fourth_card() == hand.fifth_card())
 }
 
-fn cards_is_high_card(hand: Hand) -> bool {
-    if cards_is_five_of_a_kind(hand) {
+fn hand_is_high_card(hand: Hand) -> bool {
+    if hand_is_five_of_a_kind(hand) {
         return false;
     }
-    if cards_is_four_of_a_kind(hand) {
+    if hand_is_four_of_a_kind(hand) {
         return false;
     }
-    if cards_is_full_house(hand) {
+    if hand_is_full_house(hand) {
         return false;
     }
-    if cards_is_three_of_a_kind(hand) {
+    if hand_is_three_of_a_kind(hand) {
         return false;
     }
-    if cards_is_two_pair(hand) {
+    if hand_is_two_pair(hand) {
         return false;
     }
-    if cards_is_one_pair(hand) {
+    if hand_is_one_pair(hand) {
         return false;
     }
 
@@ -438,7 +445,7 @@ fn cards_is_high_card(hand: Hand) -> bool {
 mod tests {
     use super::*;
     use Card::*;
-    use HandWithBid::*;
+    use HandType::*;
 
     #[test]
     fn part1_example() {
@@ -503,23 +510,23 @@ mod tests {
         assert_eq!(
             get_hands_with_bids(&lines),
             vec![
-                OnePair {
+                HandWithBid {
                     hand: Hand((Three, Two, Ten, Three, King)),
                     bid: 765,
                 },
-                ThreeOfAKind {
+                HandWithBid {
                     hand: Hand((Ten, Five, Five, Jack, Five)),
                     bid: 684,
                 },
-                TwoPair {
+                HandWithBid {
                     hand: Hand((King, King, Six, Seven, Seven)),
                     bid: 28,
                 },
-                TwoPair {
+                HandWithBid {
                     hand: Hand((King, Ten, Jack, Jack, Ten)),
                     bid: 220,
                 },
-                ThreeOfAKind {
+                HandWithBid {
                     hand: Hand((Queen, Queen, Queen, Jack, As)),
                     bid: 483,
                 },
@@ -528,65 +535,30 @@ mod tests {
     }
 
     #[test]
-    fn build_hand_with_bid_success() {
-        for (hand, bid, expected) in [
-            (
-                Hand((Three, Two, Ten, Three, King)),
-                765,
-                OnePair {
-                    hand: Hand((Three, Two, Ten, Three, King)),
-                    bid: 765,
-                },
-            ),
-            (
-                Hand((Ten, Five, Five, Jack, Five)),
-                684,
-                ThreeOfAKind {
-                    hand: Hand((Ten, Five, Five, Jack, Five)),
-                    bid: 684,
-                },
-            ),
-            (
-                Hand((King, King, Six, Seven, Seven)),
-                28,
-                TwoPair {
-                    hand: Hand((King, King, Six, Seven, Seven)),
-                    bid: 28,
-                },
-            ),
-            (
-                Hand((King, Ten, Jack, Jack, Ten)),
-                220,
-                TwoPair {
-                    hand: Hand((King, Ten, Jack, Jack, Ten)),
-                    bid: 220,
-                },
-            ),
-            (
-                Hand((Queen, Queen, Queen, Jack, As)),
-                483,
-                ThreeOfAKind {
-                    hand: Hand((Queen, Queen, Queen, Jack, As)),
-                    bid: 483,
-                },
-            ),
+    fn hand_get_type_success() {
+        for (hand, expected) in [
+            (Hand((Three, Two, Ten, Three, King)), OnePair),
+            (Hand((Ten, Five, Five, Jack, Five)), ThreeOfAKind),
+            (Hand((King, King, Six, Seven, Seven)), TwoPair),
+            (Hand((King, Ten, Jack, Jack, Ten)), TwoPair),
+            (Hand((Queen, Queen, Queen, Jack, As)), ThreeOfAKind),
         ] {
-            assert_eq!(build_hand_with_bid(hand, bid), expected);
+            assert_eq!(hand.get_type(), expected);
         }
     }
 
     #[test]
-    fn cards_is_five_of_a_kind_success() {
+    fn hand_is_five_of_a_kind_success() {
         for (hand, expected) in [
             (Hand((Three, Three, Three, Three, Three)), true),
             (Hand((Three, Three, King, Three, Three)), false),
         ] {
-            assert_eq!(cards_is_five_of_a_kind(hand), expected);
+            assert_eq!(hand_is_five_of_a_kind(hand), expected);
         }
     }
 
     #[test]
-    fn cards_is_four_of_a_kind_success() {
+    fn hand_is_four_of_a_kind_success() {
         for (hand, expected) in [
             (Hand((Four, Three, Three, Three, Three)), true),
             (Hand((Three, Four, Three, Three, Three)), true),
@@ -596,12 +568,12 @@ mod tests {
             (Hand((Three, Two, Three, Three, King)), false),
             (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(cards_is_four_of_a_kind(hand), expected);
+            assert_eq!(hand_is_four_of_a_kind(hand), expected);
         }
     }
 
     #[test]
-    fn cards_is_full_house_success() {
+    fn hand_is_full_house_success() {
         for (hand, expected) in [
             (Hand((Eight, Eight, Eight, Four, Four)), true),
             (Hand((Eight, Eight, Four, Eight, Four)), true),
@@ -617,12 +589,12 @@ mod tests {
             (Hand((Three, Four, Three, Three, Three)), false),
             (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(cards_is_full_house(hand), expected);
+            assert_eq!(hand_is_full_house(hand), expected);
         }
     }
 
     #[test]
-    fn cards_is_three_of_a_kind_success() {
+    fn hand_is_three_of_a_kind_success() {
         for (hand, expected) in [
             (Hand((Three, Three, Three, Four, As)), true),
             (Hand((Three, Three, Four, Three, As)), true),
@@ -637,12 +609,12 @@ mod tests {
             (Hand((Three, Four, Three, Three, Three)), false),
             (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(cards_is_three_of_a_kind(hand), expected);
+            assert_eq!(hand_is_three_of_a_kind(hand), expected);
         }
     }
 
     #[test]
-    fn cards_is_two_pair_success() {
+    fn hand_is_two_pair_success() {
         for (hand, expected) in [
             (Hand((Three, Four, Three, Four, As)), true),
             (Hand((Three, Four, Three, King, As)), false),
@@ -651,12 +623,12 @@ mod tests {
             (Hand((Three, Four, Three, Three, Three)), false),
             (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(cards_is_two_pair(hand), expected);
+            assert_eq!(hand_is_two_pair(hand), expected);
         }
     }
 
     #[test]
-    fn cards_is_one_pair_success() {
+    fn hand_is_one_pair_success() {
         for (hand, expected) in [
             (Hand((Three, Four, Three, King, As)), true),
             (Hand((Three, King, Two, Queen, As)), false),
@@ -666,12 +638,12 @@ mod tests {
             (Hand((Three, Four, Three, Three, Three)), false),
             (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(cards_is_one_pair(hand), expected);
+            assert_eq!(hand_is_one_pair(hand), expected);
         }
     }
 
     #[test]
-    fn cards_is_high_card_success() {
+    fn hand_is_high_card_success() {
         for (hand, expected) in [
             (Hand((Three, King, Two, Queen, As)), true),
             (Hand((Three, Four, Three, King, As)), false),
@@ -681,10 +653,22 @@ mod tests {
             (Hand((Three, Four, Three, Three, Three)), false),
             (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(cards_is_high_card(hand), expected);
+            assert_eq!(hand_is_high_card(hand), expected);
         }
     }
 
     #[test]
-    fn part2_example() {}
+    fn part2_example() {
+        let lines = vec![
+            "32T3K 765",
+            "T55J5 684",
+            "KK677 28",
+            "KTJJT 220",
+            "QQQJA 483",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(part2(lines), "5905");
+    }
 }

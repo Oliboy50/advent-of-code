@@ -18,8 +18,16 @@ fn part1(lines: Vec<String>) -> String {
         .to_string()
 }
 
-fn part2(_lines: Vec<String>) -> String {
-    todo!()
+fn part2(lines: Vec<String>) -> String {
+    let mut hands_with_bids = get_hands_with_bids(&lines);
+    hands_with_bids.sort_by(sort_hands_with_bids_for_part2);
+
+    hands_with_bids
+        .into_iter()
+        .enumerate()
+        .map(|(i, hand_with_bid)| (i + 1) as u64 * hand_with_bid.get_bid() as u64)
+        .sum::<u64>()
+        .to_string()
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Ord)]
@@ -70,6 +78,24 @@ impl Card {
             Card::Four => 4,
             Card::Three => 3,
             Card::Two => 2,
+        }
+    }
+
+    fn get_weight_for_sorting_for_part2(&self) -> u8 {
+        match self {
+            Card::As => 14,
+            Card::King => 13,
+            Card::Queen => 12,
+            Card::Ten => 10,
+            Card::Nine => 9,
+            Card::Eight => 8,
+            Card::Seven => 7,
+            Card::Six => 6,
+            Card::Five => 5,
+            Card::Four => 4,
+            Card::Three => 3,
+            Card::Two => 2,
+            Card::Jack => 1,
         }
     }
 }
@@ -183,23 +209,189 @@ impl Hand {
     }
 
     fn get_type(&self) -> HandType {
-        let hand = *self;
-        if hand_is_five_of_a_kind(hand) {
+        if self.is_five_of_a_kind() {
             HandType::FiveOfAKind
-        } else if hand_is_four_of_a_kind(hand) {
+        } else if self.is_four_of_a_kind() {
             HandType::FourOfAKind
-        } else if hand_is_full_house(hand) {
+        } else if self.is_full_house() {
             HandType::FullHouse
-        } else if hand_is_three_of_a_kind(hand) {
+        } else if self.is_three_of_a_kind() {
             HandType::ThreeOfAKind
-        } else if hand_is_two_pair(hand) {
+        } else if self.is_two_pair() {
             HandType::TwoPair
-        } else if hand_is_one_pair(hand) {
+        } else if self.is_one_pair() {
             HandType::OnePair
-        } else if hand_is_high_card(hand) {
-            HandType::HighCard
         } else {
-            panic!("Unsupported hand");
+            HandType::HighCard
+        }
+    }
+
+    fn get_type_for_part2(&self) -> HandType {
+        if self.is_five_of_a_kind() || self.is_five_of_a_kind_with_joker() {
+            HandType::FiveOfAKind
+        } else if self.is_four_of_a_kind() || self.is_four_of_a_kind_with_joker() {
+            HandType::FourOfAKind
+        } else if self.is_full_house() || self.is_full_house_with_joker() {
+            HandType::FullHouse
+        } else if self.is_three_of_a_kind() || self.is_three_of_a_kind_with_joker() {
+            HandType::ThreeOfAKind
+        } else if self.is_two_pair() {
+            HandType::TwoPair
+        } else if self.is_one_pair() || self.is_one_pair_with_joker() {
+            HandType::OnePair
+        } else {
+            HandType::HighCard
+        }
+    }
+
+    fn get_number_of_jacks(&self) -> u8 {
+        self.into_iter().fold(0, |acc, c| {
+            if matches!(c, Card::Jack) {
+                acc + 1
+            } else {
+                acc
+            }
+        })
+    }
+
+    fn is_five_of_a_kind(&self) -> bool {
+        self.first_card() == self.second_card()
+            && self.second_card() == self.third_card()
+            && self.third_card() == self.fourth_card()
+            && self.fourth_card() == self.fifth_card()
+    }
+
+    fn is_four_of_a_kind(&self) -> bool {
+        (self.first_card() == self.second_card()
+            && self.second_card() == self.third_card()
+            && self.third_card() == self.fourth_card())
+            || (self.first_card() == self.second_card()
+                && self.second_card() == self.third_card()
+                && self.third_card() == self.fifth_card())
+            || (self.first_card() == self.second_card()
+                && self.second_card() == self.fourth_card()
+                && self.fourth_card() == self.fifth_card())
+            || (self.first_card() == self.third_card()
+                && self.third_card() == self.fourth_card()
+                && self.fourth_card() == self.fifth_card())
+            || (self.second_card() == self.third_card()
+                && self.third_card() == self.fourth_card()
+                && self.fourth_card() == self.fifth_card())
+    }
+
+    fn is_full_house(&self) -> bool {
+        (self.first_card() == self.second_card()
+            && self.second_card() == self.third_card()
+            && self.fourth_card() == self.fifth_card())
+            || (self.first_card() == self.second_card()
+                && self.second_card() == self.fourth_card()
+                && self.third_card() == self.fifth_card())
+            || (self.first_card() == self.second_card()
+                && self.second_card() == self.fifth_card()
+                && self.third_card() == self.fourth_card())
+            || (self.first_card() == self.third_card()
+                && self.third_card() == self.fourth_card()
+                && self.second_card() == self.fifth_card())
+            || (self.first_card() == self.third_card()
+                && self.third_card() == self.fifth_card()
+                && self.second_card() == self.fourth_card())
+            || (self.first_card() == self.fourth_card()
+                && self.fourth_card() == self.fifth_card()
+                && self.second_card() == self.third_card())
+            || (self.second_card() == self.third_card()
+                && self.third_card() == self.fourth_card()
+                && self.first_card() == self.fifth_card())
+            || (self.second_card() == self.third_card()
+                && self.third_card() == self.fifth_card()
+                && self.first_card() == self.fourth_card())
+            || (self.second_card() == self.fourth_card()
+                && self.fourth_card() == self.fifth_card()
+                && self.first_card() == self.third_card())
+            || (self.third_card() == self.fourth_card()
+                && self.fourth_card() == self.fifth_card()
+                && self.first_card() == self.second_card())
+    }
+
+    fn is_three_of_a_kind(&self) -> bool {
+        (self.first_card() == self.second_card() && self.second_card() == self.third_card())
+            || (self.first_card() == self.second_card() && self.second_card() == self.fourth_card())
+            || (self.first_card() == self.second_card() && self.second_card() == self.fifth_card())
+            || (self.first_card() == self.third_card() && self.third_card() == self.fourth_card())
+            || (self.first_card() == self.third_card() && self.third_card() == self.fifth_card())
+            || (self.first_card() == self.fourth_card() && self.fourth_card() == self.fifth_card())
+            || (self.second_card() == self.third_card() && self.third_card() == self.fourth_card())
+            || (self.second_card() == self.third_card() && self.third_card() == self.fifth_card())
+            || (self.second_card() == self.fourth_card() && self.fourth_card() == self.fifth_card())
+            || (self.third_card() == self.fourth_card() && self.fourth_card() == self.fifth_card())
+    }
+
+    fn is_two_pair(&self) -> bool {
+        (self.first_card() == self.second_card() && self.third_card() == self.fourth_card())
+            || (self.first_card() == self.second_card() && self.third_card() == self.fifth_card())
+            || (self.first_card() == self.second_card() && self.fourth_card() == self.fifth_card())
+            || (self.first_card() == self.third_card() && self.second_card() == self.fourth_card())
+            || (self.first_card() == self.third_card() && self.second_card() == self.fifth_card())
+            || (self.first_card() == self.third_card() && self.fourth_card() == self.fifth_card())
+            || (self.first_card() == self.fourth_card() && self.second_card() == self.third_card())
+            || (self.first_card() == self.fourth_card() && self.second_card() == self.fifth_card())
+            || (self.first_card() == self.fourth_card() && self.third_card() == self.fifth_card())
+            || (self.first_card() == self.fifth_card() && self.second_card() == self.third_card())
+            || (self.first_card() == self.fifth_card() && self.second_card() == self.fourth_card())
+            || (self.first_card() == self.fifth_card() && self.third_card() == self.fourth_card())
+            || (self.second_card() == self.third_card() && self.fourth_card() == self.fifth_card())
+            || (self.second_card() == self.fourth_card() && self.third_card() == self.fifth_card())
+            || (self.second_card() == self.fifth_card() && self.third_card() == self.fourth_card())
+    }
+
+    fn is_one_pair(&self) -> bool {
+        (self.first_card() == self.second_card())
+            || (self.first_card() == self.third_card())
+            || (self.first_card() == self.fourth_card())
+            || (self.first_card() == self.fifth_card())
+            || (self.second_card() == self.third_card())
+            || (self.second_card() == self.fourth_card())
+            || (self.second_card() == self.fifth_card())
+            || (self.third_card() == self.fourth_card())
+            || (self.third_card() == self.fifth_card())
+            || (self.fourth_card() == self.fifth_card())
+    }
+
+    fn is_five_of_a_kind_with_joker(&self) -> bool {
+        match self.get_number_of_jacks() {
+            1 => self.is_four_of_a_kind(),
+            2 | 3 => self.is_full_house(),
+            4 => true,
+            _ => false,
+        }
+    }
+
+    fn is_four_of_a_kind_with_joker(&self) -> bool {
+        match self.get_number_of_jacks() {
+            1 => self.is_three_of_a_kind(),
+            2 => self.is_two_pair(),
+            3 => true,
+            _ => false,
+        }
+    }
+
+    fn is_full_house_with_joker(&self) -> bool {
+        match self.get_number_of_jacks() {
+            1 => self.is_two_pair(),
+            _ => false,
+        }
+    }
+
+    fn is_three_of_a_kind_with_joker(&self) -> bool {
+        match self.get_number_of_jacks() {
+            2 | 1 => self.is_one_pair(),
+            _ => false,
+        }
+    }
+
+    fn is_one_pair_with_joker(&self) -> bool {
+        match self.get_number_of_jacks() {
+            1 => true,
+            _ => false,
         }
     }
 }
@@ -266,179 +458,33 @@ fn get_hands_with_bids(lines: &[String]) -> Vec<HandWithBid> {
         .collect()
 }
 
-fn hand_is_five_of_a_kind(hand: Hand) -> bool {
-    hand.first_card() == hand.second_card()
-        && hand.second_card() == hand.third_card()
-        && hand.third_card() == hand.fourth_card()
-        && hand.fourth_card() == hand.fifth_card()
-}
+fn sort_hands_with_bids_for_part2(hand_with_bid: &HandWithBid, other: &HandWithBid) -> Ordering {
+    let self_hand = hand_with_bid.get_hand();
+    let other_hand = other.get_hand();
 
-fn hand_is_four_of_a_kind(hand: Hand) -> bool {
-    if hand_is_five_of_a_kind(hand) {
-        return false;
-    }
+    let self_type_value = self_hand.get_type_for_part2().get_weight_for_sorting();
+    let other_type_value = other_hand.get_type_for_part2().get_weight_for_sorting();
 
-    (hand.first_card() == hand.second_card()
-        && hand.second_card() == hand.third_card()
-        && hand.third_card() == hand.fourth_card())
-        || (hand.first_card() == hand.second_card()
-            && hand.second_card() == hand.third_card()
-            && hand.third_card() == hand.fifth_card())
-        || (hand.first_card() == hand.second_card()
-            && hand.second_card() == hand.fourth_card()
-            && hand.fourth_card() == hand.fifth_card())
-        || (hand.first_card() == hand.third_card()
-            && hand.third_card() == hand.fourth_card()
-            && hand.fourth_card() == hand.fifth_card())
-        || (hand.second_card() == hand.third_card()
-            && hand.third_card() == hand.fourth_card()
-            && hand.fourth_card() == hand.fifth_card())
-}
-
-fn hand_is_full_house(hand: Hand) -> bool {
-    if hand_is_five_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_four_of_a_kind(hand) {
-        return false;
+    if self_type_value > other_type_value {
+        return Ordering::Greater;
+    } else if self_type_value < other_type_value {
+        return Ordering::Less;
     }
 
-    (hand.first_card() == hand.second_card()
-        && hand.second_card() == hand.third_card()
-        && hand.fourth_card() == hand.fifth_card())
-        || (hand.first_card() == hand.second_card()
-            && hand.second_card() == hand.fourth_card()
-            && hand.third_card() == hand.fifth_card())
-        || (hand.first_card() == hand.second_card()
-            && hand.second_card() == hand.fifth_card()
-            && hand.third_card() == hand.fourth_card())
-        || (hand.first_card() == hand.third_card()
-            && hand.third_card() == hand.fourth_card()
-            && hand.second_card() == hand.fifth_card())
-        || (hand.first_card() == hand.third_card()
-            && hand.third_card() == hand.fifth_card()
-            && hand.second_card() == hand.fourth_card())
-        || (hand.first_card() == hand.fourth_card()
-            && hand.fourth_card() == hand.fifth_card()
-            && hand.second_card() == hand.third_card())
-        || (hand.second_card() == hand.third_card()
-            && hand.third_card() == hand.fourth_card()
-            && hand.first_card() == hand.fifth_card())
-        || (hand.second_card() == hand.third_card()
-            && hand.third_card() == hand.fifth_card()
-            && hand.first_card() == hand.fourth_card())
-        || (hand.second_card() == hand.fourth_card()
-            && hand.fourth_card() == hand.fifth_card()
-            && hand.first_card() == hand.third_card())
-        || (hand.third_card() == hand.fourth_card()
-            && hand.fourth_card() == hand.fifth_card()
-            && hand.first_card() == hand.second_card())
-}
+    let self_cards = self_hand.into_iter();
+    let other_cards = other_hand.into_iter();
 
-fn hand_is_three_of_a_kind(hand: Hand) -> bool {
-    if hand_is_five_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_four_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_full_house(hand) {
-        return false;
+    for (self_card, other_card) in self_cards.zip(other_cards) {
+        let self_card = self_card.get_weight_for_sorting_for_part2();
+        let other_card = other_card.get_weight_for_sorting_for_part2();
+        if self_card > other_card {
+            return Ordering::Greater;
+        } else if self_card < other_card {
+            return Ordering::Less;
+        }
     }
 
-    (hand.first_card() == hand.second_card() && hand.second_card() == hand.third_card())
-        || (hand.first_card() == hand.second_card() && hand.second_card() == hand.fourth_card())
-        || (hand.first_card() == hand.second_card() && hand.second_card() == hand.fifth_card())
-        || (hand.first_card() == hand.third_card() && hand.third_card() == hand.fourth_card())
-        || (hand.first_card() == hand.third_card() && hand.third_card() == hand.fifth_card())
-        || (hand.first_card() == hand.fourth_card() && hand.fourth_card() == hand.fifth_card())
-        || (hand.second_card() == hand.third_card() && hand.third_card() == hand.fourth_card())
-        || (hand.second_card() == hand.third_card() && hand.third_card() == hand.fifth_card())
-        || (hand.second_card() == hand.fourth_card() && hand.fourth_card() == hand.fifth_card())
-        || (hand.third_card() == hand.fourth_card() && hand.fourth_card() == hand.fifth_card())
-}
-
-fn hand_is_two_pair(hand: Hand) -> bool {
-    if hand_is_five_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_four_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_full_house(hand) {
-        return false;
-    }
-    if hand_is_three_of_a_kind(hand) {
-        return false;
-    }
-
-    (hand.first_card() == hand.second_card() && hand.third_card() == hand.fourth_card())
-        || (hand.first_card() == hand.second_card() && hand.third_card() == hand.fifth_card())
-        || (hand.first_card() == hand.second_card() && hand.fourth_card() == hand.fifth_card())
-        || (hand.first_card() == hand.third_card() && hand.second_card() == hand.fourth_card())
-        || (hand.first_card() == hand.third_card() && hand.second_card() == hand.fifth_card())
-        || (hand.first_card() == hand.third_card() && hand.fourth_card() == hand.fifth_card())
-        || (hand.first_card() == hand.fourth_card() && hand.second_card() == hand.third_card())
-        || (hand.first_card() == hand.fourth_card() && hand.second_card() == hand.fifth_card())
-        || (hand.first_card() == hand.fourth_card() && hand.third_card() == hand.fifth_card())
-        || (hand.first_card() == hand.fifth_card() && hand.second_card() == hand.third_card())
-        || (hand.first_card() == hand.fifth_card() && hand.second_card() == hand.fourth_card())
-        || (hand.first_card() == hand.fifth_card() && hand.third_card() == hand.fourth_card())
-        || (hand.second_card() == hand.third_card() && hand.fourth_card() == hand.fifth_card())
-        || (hand.second_card() == hand.fourth_card() && hand.third_card() == hand.fifth_card())
-        || (hand.second_card() == hand.fifth_card() && hand.third_card() == hand.fourth_card())
-}
-
-fn hand_is_one_pair(hand: Hand) -> bool {
-    if hand_is_five_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_four_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_full_house(hand) {
-        return false;
-    }
-    if hand_is_three_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_two_pair(hand) {
-        return false;
-    }
-
-    (hand.first_card() == hand.second_card())
-        || (hand.first_card() == hand.third_card())
-        || (hand.first_card() == hand.fourth_card())
-        || (hand.first_card() == hand.fifth_card())
-        || (hand.second_card() == hand.third_card())
-        || (hand.second_card() == hand.fourth_card())
-        || (hand.second_card() == hand.fifth_card())
-        || (hand.third_card() == hand.fourth_card())
-        || (hand.third_card() == hand.fifth_card())
-        || (hand.fourth_card() == hand.fifth_card())
-}
-
-fn hand_is_high_card(hand: Hand) -> bool {
-    if hand_is_five_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_four_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_full_house(hand) {
-        return false;
-    }
-    if hand_is_three_of_a_kind(hand) {
-        return false;
-    }
-    if hand_is_two_pair(hand) {
-        return false;
-    }
-    if hand_is_one_pair(hand) {
-        return false;
-    }
-
-    true
+    Ordering::Equal
 }
 
 #[cfg(test)]
@@ -553,7 +599,7 @@ mod tests {
             (Hand((Three, Three, Three, Three, Three)), true),
             (Hand((Three, Three, King, Three, Three)), false),
         ] {
-            assert_eq!(hand_is_five_of_a_kind(hand), expected);
+            assert_eq!(hand.is_five_of_a_kind(), expected);
         }
     }
 
@@ -566,9 +612,8 @@ mod tests {
             (Hand((Three, Three, Three, Four, Three)), true),
             (Hand((Three, Three, Three, Three, Four)), true),
             (Hand((Three, Two, Three, Three, King)), false),
-            (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(hand_is_four_of_a_kind(hand), expected);
+            assert_eq!(hand.is_four_of_a_kind(), expected);
         }
     }
 
@@ -586,10 +631,8 @@ mod tests {
             (Hand((Four, Eight, Four, Eight, Eight)), true),
             (Hand((Four, Four, Eight, Eight, Eight)), true),
             (Hand((Three, King, Three, Three, As)), false),
-            (Hand((Three, Four, Three, Three, Three)), false),
-            (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(hand_is_full_house(hand), expected);
+            assert_eq!(hand.is_full_house(), expected);
         }
     }
 
@@ -605,11 +648,8 @@ mod tests {
             (Hand((Four, Three, As, Three, Three)), true),
             (Hand((Four, As, Three, Three, Three)), true),
             (Hand((Three, King, Three, King, As)), false),
-            (Hand((Three, King, Three, Three, King)), false),
-            (Hand((Three, Four, Three, Three, Three)), false),
-            (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(hand_is_three_of_a_kind(hand), expected);
+            assert_eq!(hand.is_three_of_a_kind(), expected);
         }
     }
 
@@ -618,12 +658,8 @@ mod tests {
         for (hand, expected) in [
             (Hand((Three, Four, Three, Four, As)), true),
             (Hand((Three, Four, Three, King, As)), false),
-            (Hand((Three, Four, Three, As, Three)), false),
-            (Hand((Three, King, Three, Three, King)), false),
-            (Hand((Three, Four, Three, Three, Three)), false),
-            (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(hand_is_two_pair(hand), expected);
+            assert_eq!(hand.is_two_pair(), expected);
         }
     }
 
@@ -632,28 +668,8 @@ mod tests {
         for (hand, expected) in [
             (Hand((Three, Four, Three, King, As)), true),
             (Hand((Three, King, Two, Queen, As)), false),
-            (Hand((Three, Four, Three, Four, As)), false),
-            (Hand((Three, Four, Three, As, Three)), false),
-            (Hand((Three, King, Three, Three, King)), false),
-            (Hand((Three, Four, Three, Three, Three)), false),
-            (Hand((Three, Three, Three, Three, Three)), false),
         ] {
-            assert_eq!(hand_is_one_pair(hand), expected);
-        }
-    }
-
-    #[test]
-    fn hand_is_high_card_success() {
-        for (hand, expected) in [
-            (Hand((Three, King, Two, Queen, As)), true),
-            (Hand((Three, Four, Three, King, As)), false),
-            (Hand((Three, Four, Three, Four, As)), false),
-            (Hand((Three, Four, Three, As, Three)), false),
-            (Hand((Three, King, Three, Three, King)), false),
-            (Hand((Three, Four, Three, Three, Three)), false),
-            (Hand((Three, Three, Three, Three, Three)), false),
-        ] {
-            assert_eq!(hand_is_high_card(hand), expected);
+            assert_eq!(hand.is_one_pair(), expected);
         }
     }
 
@@ -670,5 +686,96 @@ mod tests {
         .map(|s| s.to_string())
         .collect();
         assert_eq!(part2(lines), "5905");
+    }
+
+    #[test]
+    fn part2_more_cases_1() {
+        let lines = vec![
+            "2JJJ5 280", // four kind
+            "88444 389", // full house
+            "86866 534", // full house
+            "29929 966", // full house
+            "7Q7J6 253", // three kind
+            "Q6996 762", // two pairs
+            "7292T 98",  // one pair
+            "7J9AT 722", // one pair
+            "QT2A4 841", // high card
+            "69753 514", // high card
+            "675KT 785", // high card
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(
+            part2(lines),
+            (785 * 1
+                + 514 * 2
+                + 841 * 3
+                + 722 * 4
+                + 98 * 5
+                + 762 * 6
+                + 253 * 7
+                + 966 * 8
+                + 534 * 9
+                + 389 * 10
+                + 280 * 11)
+                .to_string()
+        );
+    }
+
+    #[test]
+    fn hand_is_five_of_a_kind_with_joker_success() {
+        for (hand, expected) in [
+            (Hand((Jack, Jack, Jack, Jack, Three)), true),
+            (Hand((Three, Three, Three, Three, Jack)), true),
+            (Hand((Three, Three, Jack, Jack, Three)), true),
+            (Hand((Three, Three, Jack, Jack, Jack)), true),
+            (Hand((Three, Two, Jack, Jack, Jack)), false),
+        ] {
+            assert_eq!(hand.is_five_of_a_kind_with_joker(), expected);
+        }
+    }
+
+    #[test]
+    fn hand_is_four_of_a_kind_with_joker_success() {
+        for (hand, expected) in [
+            (Hand((Four, Three, Three, Three, Jack)), true),
+            (Hand((Three, Four, Three, Jack, Jack)), true),
+            (Hand((Three, Jack, Four, Jack, Jack)), true),
+            (Hand((Three, Jack, Jack, Four, King)), false),
+        ] {
+            assert_eq!(hand.is_four_of_a_kind_with_joker(), expected);
+        }
+    }
+
+    #[test]
+    fn hand_is_full_house_with_joker_success() {
+        for (hand, expected) in [
+            (Hand((Eight, Eight, Jack, Four, Four)), true),
+            (Hand((Three, King, Jack, Three, As)), false),
+        ] {
+            assert_eq!(hand.is_full_house_with_joker(), expected);
+        }
+    }
+
+    #[test]
+    fn hand_is_three_of_a_kind_with_joker_success() {
+        for (hand, expected) in [
+            (Hand((Three, Three, Jack, Four, As)), true),
+            (Hand((Three, Jack, Four, Jack, As)), true),
+            (Hand((Three, King, Two, Jack, As)), false),
+        ] {
+            assert_eq!(hand.is_three_of_a_kind_with_joker(), expected);
+        }
+    }
+
+    #[test]
+    fn hand_is_one_pair_with_joker_success() {
+        for (hand, expected) in [
+            (Hand((Three, Four, Jack, King, As)), true),
+            (Hand((Three, King, Two, Queen, As)), false),
+        ] {
+            assert_eq!(hand.is_one_pair_with_joker(), expected);
+        }
     }
 }

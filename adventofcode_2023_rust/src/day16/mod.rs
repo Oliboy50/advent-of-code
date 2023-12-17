@@ -218,6 +218,7 @@ enum GridItemKind {
 fn get_number_of_energized_items_for_starting_beam_head(
     grid: Grid,
     first_beam_head: BeamHead,
+    max_number_of_useless_iterations: usize,
 ) -> usize {
     let mut grid = grid;
     let mut last_number_of_energized_items = 0;
@@ -313,7 +314,8 @@ fn get_number_of_energized_items_for_starting_beam_head(
         }
         last_number_of_energized_items = grid.number_of_energized_items;
         if beam_heads.is_empty()
-            || number_of_iterations_when_new_is_same_as_last_energized_items > 50
+            || number_of_iterations_when_new_is_same_as_last_energized_items
+                > max_number_of_useless_iterations
         {
             break;
         }
@@ -323,13 +325,18 @@ fn get_number_of_energized_items_for_starting_beam_head(
 }
 
 fn part1(lines: Vec<String>, draw_in_terminal: bool) -> String {
+    let max_number_of_useless_iterations = 50; // enough for my input
     let mut grid = Grid::from(lines);
     let first_beam_head = BeamHead::default();
     let mut beam_heads = vec![first_beam_head];
 
     if !draw_in_terminal {
-        return get_number_of_energized_items_for_starting_beam_head(grid, first_beam_head)
-            .to_string();
+        return get_number_of_energized_items_for_starting_beam_head(
+            grid,
+            first_beam_head,
+            max_number_of_useless_iterations,
+        )
+        .to_string();
     }
 
     let mut last_number_of_energized_items = 0;
@@ -449,7 +456,8 @@ fn part1(lines: Vec<String>, draw_in_terminal: bool) -> String {
 
         // if no more beam heads, the game is over
         if beam_heads.is_empty()
-            || number_of_iterations_when_number_of_energized_items_are_identical > 100
+            || number_of_iterations_when_number_of_energized_items_are_identical
+                > max_number_of_useless_iterations
         {
             break;
         }
@@ -493,6 +501,7 @@ fn part1(lines: Vec<String>, draw_in_terminal: bool) -> String {
 }
 
 fn part2(lines: Vec<String>) -> String {
+    let max_number_of_useless_iterations = 10; // enough for my input (I'm lucky because the program quickly gets stuck if we increase this number)
     let grid = Grid::from(lines);
 
     let starting_beam_heads_from_left: Vec<BeamHead> = (0..grid.height)
@@ -538,6 +547,7 @@ fn part2(lines: Vec<String>) -> String {
             let number_of_energized_items = get_number_of_energized_items_for_starting_beam_head(
                 grid.clone(),
                 starting_beam_head,
+                max_number_of_useless_iterations,
             );
             println!("starting spot n°{i} = {number_of_energized_items}");
             number_of_energized_items

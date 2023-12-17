@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 #[cfg(feature = "day01")]
 mod day01;
 #[cfg(feature = "day02")]

@@ -79,11 +79,20 @@ impl Grid {
     }
 
     fn move_rocks_until_items_are_blocked(&mut self) {
+        let mut non_blocked_rounded_rocks_positions = self.get_rounded_rocks_positions();
+
         let (x_step, y_step) = match self.orientation {
             GridOrientation::North => (0isize, -1isize),
-            _ => todo!("Implement moving rocks to other directions"),
+            GridOrientation::East => {
+                non_blocked_rounded_rocks_positions.reverse();
+                (1isize, 0isize)
+            }
+            GridOrientation::South => {
+                non_blocked_rounded_rocks_positions.reverse();
+                (0isize, 1isize)
+            }
+            GridOrientation::West => (-1isize, 0isize),
         };
-        let mut non_blocked_rounded_rocks_positions = self.get_rounded_rocks_positions();
 
         loop {
             if non_blocked_rounded_rocks_positions.is_empty() {
@@ -91,9 +100,9 @@ impl Grid {
             }
 
             // loop through rounded rocks and move them
-            let mut rounded_rocks_to_block_indexes =
+            let mut rounded_rocks_to_block =
                 Vec::with_capacity(non_blocked_rounded_rocks_positions.len());
-            for (index, (x, y)) in non_blocked_rounded_rocks_positions.iter_mut().enumerate() {
+            for (x, y) in non_blocked_rounded_rocks_positions.iter_mut() {
                 let new_x = x_step + *x as isize;
                 let new_y = y_step + *y as isize;
                 if new_x < 0
@@ -101,7 +110,7 @@ impl Grid {
                     || new_y < 0
                     || new_y >= self.height as isize
                 {
-                    rounded_rocks_to_block_indexes.push(index);
+                    rounded_rocks_to_block.push((*x, *y));
                     continue;
                 }
 
@@ -115,16 +124,26 @@ impl Grid {
                         *y = new_y;
                     }
                     _ => {
-                        rounded_rocks_to_block_indexes.push(index);
+                        rounded_rocks_to_block.push((*x, *y));
                     }
                 }
             }
 
             // mark rounded rocks as blocked
-            for index in rounded_rocks_to_block_indexes.into_iter().rev() {
-                non_blocked_rounded_rocks_positions.remove(index);
-            }
+            non_blocked_rounded_rocks_positions
+                .retain(|&coordinates| !rounded_rocks_to_block.contains(&coordinates));
         }
+    }
+
+    fn spin_cycle(&mut self) {
+        self.orientation = GridOrientation::North;
+        self.move_rocks_until_items_are_blocked();
+        self.orientation = GridOrientation::West;
+        self.move_rocks_until_items_are_blocked();
+        self.orientation = GridOrientation::South;
+        self.move_rocks_until_items_are_blocked();
+        self.orientation = GridOrientation::East;
+        self.move_rocks_until_items_are_blocked();
     }
 }
 
@@ -168,37 +187,25 @@ impl From<GridItemKind> for char {
 
 fn part1(lines: Vec<String>) -> String {
     let mut grid = Grid::from(lines);
+    grid.orientation = GridOrientation::North;
     grid.move_rocks_until_items_are_blocked();
     grid.get_rounded_rocks_load().to_string()
 }
 
-fn part2(_lines: Vec<String>) -> String {
-    todo!()
+fn part2(lines: Vec<String>) -> String {
+    let mut grid = Grid::from(lines);
+    for cycle_number in 0..1_000_000_000 {
+        if cycle_number % 100_000 == 0 {
+            println!("{}: {}", cycle_number, grid.get_rounded_rocks_load());
+        }
+        grid.spin_cycle();
+    }
+    grid.get_rounded_rocks_load().to_string()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn part1_example() {
-        let lines = vec![
-            r"O....#....",
-            r"O.OO#....#",
-            r".....##...",
-            r"OO.#O....O",
-            r".O.....O#.",
-            r"O.#..O.#.#",
-            r"..O..#O..O",
-            r".......O..",
-            r"#....###..",
-            r"#OO..#....",
-        ]
-        .iter()
-        .map(|s| s.to_string())
-        .collect();
-        assert_eq!(part1(lines), "136");
-    }
 
     #[test]
     fn grid_move_rocks_until_items_are_blocked_to_north_success() {
@@ -232,9 +239,126 @@ mod tests {
         .iter()
         .map(|s| s.to_string())
         .collect::<Vec<_>>();
-        let mut grid = Grid::from(lines);
-        assert_eq!(grid.orientation, GridOrientation::North);
 
+        let mut grid = Grid::from(lines);
+        grid.orientation = GridOrientation::North;
+        grid.move_rocks_until_items_are_blocked();
+        assert_eq!(Vec::<String>::from(grid), expected);
+    }
+
+    #[test]
+    fn grid_move_rocks_until_items_are_blocked_to_west_success() {
+        let lines = vec![
+            r"OOOO.#.O..",
+            r"OO..#....#",
+            r"OO..O##..O",
+            r"O..#.OO...",
+            r"........#.",
+            r"..#....#.#",
+            r"..O..#.O.O",
+            r"..O.......",
+            r"#....###..",
+            r"#....#....",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+        let expected = vec![
+            r"OOOO.#O...",
+            r"OO..#....#",
+            r"OOO..##O..",
+            r"O..#OO....",
+            r"........#.",
+            r"..#....#.#",
+            r"O....#OO..",
+            r"O.........",
+            r"#....###..",
+            r"#....#....",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+
+        let mut grid = Grid::from(lines);
+        grid.orientation = GridOrientation::West;
+        grid.move_rocks_until_items_are_blocked();
+        assert_eq!(Vec::<String>::from(grid), expected);
+    }
+
+    #[test]
+    fn grid_move_rocks_until_items_are_blocked_to_south_success() {
+        let lines = vec![
+            r"OOOO.#O...",
+            r"OO..#....#",
+            r"OOO..##O..",
+            r"O..#OO....",
+            r"........#.",
+            r"..#....#.#",
+            r"O....#OO..",
+            r"O.........",
+            r"#....###..",
+            r"#....#....",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+        let expected = vec![
+            r".....#....",
+            r"....#.O..#",
+            r"O..O.##...",
+            r"O.O#......",
+            r"O.O....O#.",
+            r"O.#..O.#.#",
+            r"O....#....",
+            r"OO....OO..",
+            r"#O...###..",
+            r"#O..O#....",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+
+        let mut grid = Grid::from(lines);
+        grid.orientation = GridOrientation::South;
+        grid.move_rocks_until_items_are_blocked();
+        assert_eq!(Vec::<String>::from(grid), expected);
+    }
+
+    #[test]
+    fn grid_move_rocks_until_items_are_blocked_to_east_success() {
+        let lines = vec![
+            r".....#....",
+            r"....#.O..#",
+            r"O..O.##...",
+            r"O.O#......",
+            r"O.O....O#.",
+            r"O.#..O.#.#",
+            r"O....#....",
+            r"OO....OO..",
+            r"#O...###..",
+            r"#O..O#....",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+        let expected = vec![
+            r".....#....",
+            r"....#...O#",
+            r"...OO##...",
+            r".OO#......",
+            r".....OOO#.",
+            r".O#...O#.#",
+            r"....O#....",
+            r"......OOOO",
+            r"#...O###..",
+            r"#..OO#....",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+
+        let mut grid = Grid::from(lines);
+        grid.orientation = GridOrientation::East;
         grid.move_rocks_until_items_are_blocked();
         assert_eq!(Vec::<String>::from(grid), expected);
     }
@@ -262,5 +386,82 @@ mod tests {
     }
 
     #[test]
-    fn part2_example() {}
+    fn grid_spin_cycle_success() {
+        let lines = vec![
+            r"O....#....",
+            r"O.OO#....#",
+            r".....##...",
+            r"OO.#O....O",
+            r".O.....O#.",
+            r"O.#..O.#.#",
+            r"..O..#O..O",
+            r".......O..",
+            r"#....###..",
+            r"#OO..#....",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+        let expected = vec![
+            r".....#....",
+            r"....#...O#",
+            r"...OO##...",
+            r".OO#......",
+            r".....OOO#.",
+            r".O#...O#.#",
+            r"....O#....",
+            r"......OOOO",
+            r"#...O###..",
+            r"#..OO#....",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+        let mut grid = Grid::from(lines);
+        assert_eq!(grid.orientation, GridOrientation::North);
+
+        grid.spin_cycle();
+        assert_eq!(grid.orientation, GridOrientation::East);
+        assert_eq!(Vec::<String>::from(grid), expected);
+    }
+
+    #[test]
+    fn part1_example() {
+        let lines = vec![
+            r"O....#....",
+            r"O.OO#....#",
+            r".....##...",
+            r"OO.#O....O",
+            r".O.....O#.",
+            r"O.#..O.#.#",
+            r"..O..#O..O",
+            r".......O..",
+            r"#....###..",
+            r"#OO..#....",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(part1(lines), "136");
+    }
+
+    #[test]
+    fn part2_example() {
+        let lines = vec![
+            r"O....#....",
+            r"O.OO#....#",
+            r".....##...",
+            r"OO.#O....O",
+            r".O.....O#.",
+            r"O.#..O.#.#",
+            r"..O..#O..O",
+            r".......O..",
+            r"#....###..",
+            r"#OO..#....",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(part2(lines), "64");
+    }
 }

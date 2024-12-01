@@ -3,7 +3,7 @@ pub fn exec(lines: Vec<String>) {
     println!("[day01][part2] = {}", part2(lines));
 }
 
-fn part1(lines: Vec<String>) -> String {
+pub fn part1(lines: Vec<String>) -> String {
     let first_column_numbers = get_left_column_numbers_sorted_asc(lines.clone());
     let last_column_numbers = get_right_column_numbers_sorted_asc(lines);
 
@@ -17,7 +17,7 @@ fn part1(lines: Vec<String>) -> String {
     sum.to_string()
 }
 
-fn part2(lines: Vec<String>) -> String {
+pub fn part2(lines: Vec<String>) -> String {
     let first_column_numbers = get_left_column_numbers_sorted_asc(lines.clone());
     let last_column_numbers = get_right_column_numbers_sorted_asc(lines);
 
@@ -32,7 +32,8 @@ fn part2(lines: Vec<String>) -> String {
             continue;
         }
 
-        let number_of_occurrences = get_number_of_times_the_number_is_present_in_the_list(number, &last_column_numbers);
+        let number_of_occurrences =
+            get_number_of_times_the_number_is_present_in_the_list(number, &last_column_numbers);
         let result = number * number_of_occurrences;
         last_computed_key_value = (number, result);
         sum += result;
@@ -85,14 +86,7 @@ mod tests {
 
     #[test]
     fn part1_example() {
-        let lines = vec![
-            "3   4",
-            "4   3",
-            "2   5",
-            "1   3",
-            "3   9",
-            "3   3",
-        ]
+        let lines = vec!["3   4", "4   3", "2   5", "1   3", "3   9", "3   3"]
             .iter()
             .map(|s| s.to_string())
             .collect();
@@ -102,14 +96,7 @@ mod tests {
 
     #[test]
     fn part2_example() {
-        let lines = vec![
-            "3   4",
-            "4   3",
-            "2   5",
-            "1   3",
-            "3   9",
-            "3   3",
-        ]
+        let lines = vec!["3   4", "4   3", "2   5", "1   3", "3   9", "3   3"]
             .iter()
             .map(|s| s.to_string())
             .collect();

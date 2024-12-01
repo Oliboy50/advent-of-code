@@ -51,9 +51,6 @@ mod day24;
 #[cfg(feature = "day25")]
 mod day25;
 
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-
 fn main() {
     #[cfg(feature = "day01")]
     day01::exec(get_lines_from("src/day01/input"));
@@ -132,6 +129,9 @@ fn main() {
 }
 
 fn get_lines_from(filepath: &str) -> Vec<String> {
+    use std::fs::File;
+    use std::io::{BufRead, BufReader};
+
     let file = File::open(filepath).unwrap();
 
     let mut result = vec![];

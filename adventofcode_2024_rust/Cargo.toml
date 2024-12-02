@@ -42,4 +42,5 @@ criterion = "0.5.1"
 
 [[bench]]
 name = "day01"
+required-features = ["day01"]
 harness = false

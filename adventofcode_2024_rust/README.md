@@ -13,7 +13,7 @@ time cargo run --release --features day01
 ## How to run tests for a day
 
 ```shell
-cargo test --features day01
+cargo test --bins --features day01
 ```
 
 ## How to run benchmarks for a day

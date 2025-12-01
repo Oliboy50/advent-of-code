@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use adventofcode_2025_rust::get_lines_from;
+
 #[cfg(feature = "day01")]
 mod day01;
 #[cfg(feature = "day02")]
@@ -61,20 +63,4 @@ fn main() {
 
     #[cfg(feature = "day12")]
     day12::exec(get_lines_from("src/day12/input"));
-}
-
-fn get_lines_from(filepath: &str) -> Vec<String> {
-    use std::fs::File;
-    use std::io::{BufRead, BufReader};
-
-    let file = File::open(filepath).unwrap();
-
-    let mut result = vec![];
-    for line in BufReader::new(file).lines() {
-        if let Ok(line) = line {
-            result.push(line);
-        }
-    }
-
-    result
 }

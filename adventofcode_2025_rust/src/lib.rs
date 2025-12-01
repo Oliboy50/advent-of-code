@@ -32,10 +32,8 @@ pub fn get_lines_from(filepath: &str) -> Vec<String> {
     let file = File::open(filepath).unwrap();
 
     let mut result = vec![];
-    for line in BufReader::new(file).lines() {
-        if let Ok(line) = line {
-            result.push(line);
-        }
+    for line in BufReader::new(file).lines().map_while(Result::ok) {
+        result.push(line);
     }
 
     result

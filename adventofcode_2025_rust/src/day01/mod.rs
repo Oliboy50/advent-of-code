@@ -20,7 +20,7 @@ fn get_value(line: &String) -> u32 {
     line[1..].parse().unwrap()
 }
 
-fn part1(lines: Vec<String>) -> String {
+pub fn part1(lines: Vec<String>) -> String {
     let mut current_value: i32 = 50;
     let mut number_of_times_value_is_zero: u32 = 0;
 
@@ -50,7 +50,7 @@ fn part1(lines: Vec<String>) -> String {
     return number_of_times_value_is_zero.to_string();
 }
 
-fn part2(lines: Vec<String>) -> String {
+pub fn part2(lines: Vec<String>) -> String {
     let mut current_value: i32 = 50;
     let mut number_of_times_value_pass_by_zero: u32 = 0;
 

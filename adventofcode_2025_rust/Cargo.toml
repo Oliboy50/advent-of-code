@@ -1,0 +1,31 @@
+[package]
+name = "adventofcode_2025_rust"
+version = "0.1.0"
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+day01 = []
+day02 = []
+day03 = []
+day04 = []
+day05 = []
+day06 = []
+day07 = []
+day08 = []
+day09 = []
+day10 = []
+day11 = []
+day12 = []
+
+[dependencies]
+regex = "1.12.2"
+
+[dev-dependencies]
+criterion = "0.8.0"
+
+[[bench]]
+name = "day01"
+required-features = ["day01"]
+harness = false

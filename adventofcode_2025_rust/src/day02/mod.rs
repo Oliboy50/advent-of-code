@@ -13,8 +13,9 @@ pub fn part1(lines: Vec<String>) -> String {
         for id in start..=end {
             let id_as_string = id.to_string();
             let how_many_digits_in_id = id_as_string.len();
-            let first_half: String = id_as_string[..how_many_digits_in_id / 2].to_string();
-            let second_half: String = id_as_string[how_many_digits_in_id / 2..].to_string();
+            let part_size = how_many_digits_in_id / 2;
+            let first_half: String = id_as_string[..part_size].to_string();
+            let second_half: String = id_as_string[part_size..].to_string();
             if first_half == second_half {
                 added_invalid_ids += id;
             }
@@ -39,8 +40,9 @@ pub fn part2(lines: Vec<String>) -> String {
             if how_many_digits_in_id < 2 {
                 continue;
             }
-            let first_half: String = id_as_string[..how_many_digits_in_id / 2].to_string();
-            let second_half: String = id_as_string[how_many_digits_in_id / 2..].to_string();
+            let part_size = how_many_digits_in_id / 2;
+            let first_half: String = id_as_string[..part_size].to_string();
+            let second_half: String = id_as_string[part_size..].to_string();
             if first_half == second_half {
                 added_invalid_ids += id;
                 continue;

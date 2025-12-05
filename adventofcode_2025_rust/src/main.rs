@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use adventofcode_2025_rust::get_lines_from;
-
 #[cfg(feature = "day01")]
 mod day01;
 #[cfg(feature = "day02")]

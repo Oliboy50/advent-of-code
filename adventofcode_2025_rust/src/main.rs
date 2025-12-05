@@ -27,38 +27,38 @@ mod day12;
 
 fn main() {
     #[cfg(feature = "day01")]
-    day01::exec(get_lines_from("src/day01/input"));
+    day01::exec(adventofcode_2025_rust::get_lines_from("src/day01/input"));
 
     #[cfg(feature = "day02")]
-    day02::exec(get_lines_from("src/day02/input"));
+    day02::exec(adventofcode_2025_rust::get_lines_from("src/day02/input"));
 
     #[cfg(feature = "day03")]
-    day03::exec(get_lines_from("src/day03/input"));
+    day03::exec(adventofcode_2025_rust::get_lines_from("src/day03/input"));
 
     #[cfg(feature = "day04")]
-    day04::exec(get_lines_from("src/day04/input"));
+    day04::exec(adventofcode_2025_rust::get_lines_from("src/day04/input"));
 
     #[cfg(feature = "day05")]
-    day05::exec(get_lines_from("src/day05/input"));
+    day05::exec(adventofcode_2025_rust::get_lines_from("src/day05/input"));
 
     #[cfg(feature = "day06")]
-    day06::exec(get_lines_from("src/day06/input"));
+    day06::exec(adventofcode_2025_rust::get_lines_from("src/day06/input"));
 
     #[cfg(feature = "day07")]
-    day07::exec(get_lines_from("src/day07/input"));
+    day07::exec(adventofcode_2025_rust::get_lines_from("src/day07/input"));
 
     #[cfg(feature = "day08")]
-    day08::exec(get_lines_from("src/day08/input"));
+    day08::exec(adventofcode_2025_rust::get_lines_from("src/day08/input"));
 
     #[cfg(feature = "day09")]
-    day09::exec(get_lines_from("src/day09/input"));
+    day09::exec(adventofcode_2025_rust::get_lines_from("src/day09/input"));
 
     #[cfg(feature = "day10")]
-    day10::exec(get_lines_from("src/day10/input"));
+    day10::exec(adventofcode_2025_rust::get_lines_from("src/day10/input"));
 
     #[cfg(feature = "day11")]
-    day11::exec(get_lines_from("src/day11/input"));
+    day11::exec(adventofcode_2025_rust::get_lines_from("src/day11/input"));
 
     #[cfg(feature = "day12")]
-    day12::exec(get_lines_from("src/day12/input"));
+    day12::exec(adventofcode_2025_rust::get_lines_from("src/day12/input"));
 }

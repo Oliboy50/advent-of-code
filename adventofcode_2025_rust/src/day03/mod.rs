@@ -10,25 +10,16 @@ pub fn part1(lines: Vec<String>) -> String {
             .chars()
             .map(|c| c.to_digit(10).unwrap() as u8)
             .collect();
-        let mut first_highest_digit = 0;
-        let mut first_highest_digit_index = 0;
-        let mut second_highest_digit = 0;
-        // get first highest digit
-        for (i, digit) in digits.iter().enumerate() {
-            if first_highest_digit < *digit && i < digits.len() - 1 {
-                first_highest_digit = *digit;
-                first_highest_digit_index = i;
-            }
-        }
-        // get second-highest digit
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= first_highest_digit_index {
-                continue;
-            }
-            if second_highest_digit < *digit {
-                second_highest_digit = *digit;
-            }
-        }
+        let (first_highest_digit_index, first_highest_digit) = digits
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| *i < digits.len() - 1)
+            .fold((0, 0), fold_first_highest_digit);
+        let (_, second_highest_digit) = digits
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| *i > first_highest_digit_index)
+            .fold((0, 0), fold_first_highest_digit);
 
         total += format!("{first_highest_digit}{second_highest_digit}")
             .parse::<u32>()
@@ -38,6 +29,17 @@ pub fn part1(lines: Vec<String>) -> String {
     total.to_string()
 }
 
+fn fold_first_highest_digit(
+    (acc_index, acc_digit): (usize, u8),
+    (i, digit): (usize, &u8),
+) -> (usize, u8) {
+    if *digit > acc_digit {
+        (i, *digit)
+    } else {
+        (acc_index, acc_digit)
+    }
+}
+
 pub fn part2(lines: Vec<String>) -> String {
     let mut total: u128 = 0;
     for line in lines {
@@ -45,133 +47,66 @@ pub fn part2(lines: Vec<String>) -> String {
             .chars()
             .map(|c| c.to_digit(10).unwrap() as u8)
             .collect();
-        let mut highest_digit_1 = 0;
-        let mut highest_digit_1_index = 0;
-        let mut highest_digit_2 = 0;
-        let mut highest_digit_2_index = 0;
-        let mut highest_digit_3 = 0;
-        let mut highest_digit_3_index = 0;
-        let mut highest_digit_4 = 0;
-        let mut highest_digit_4_index = 0;
-        let mut highest_digit_5 = 0;
-        let mut highest_digit_5_index = 0;
-        let mut highest_digit_6 = 0;
-        let mut highest_digit_6_index = 0;
-        let mut highest_digit_7 = 0;
-        let mut highest_digit_7_index = 0;
-        let mut highest_digit_8 = 0;
-        let mut highest_digit_8_index = 0;
-        let mut highest_digit_9 = 0;
-        let mut highest_digit_9_index = 0;
-        let mut highest_digit_10 = 0;
-        let mut highest_digit_10_index = 0;
-        let mut highest_digit_11 = 0;
-        let mut highest_digit_11_index = 0;
-        let mut highest_digit_12 = 0;
-        for (i, digit) in digits.iter().enumerate() {
-            if highest_digit_1 < *digit && i < digits.len() - 11 {
-                highest_digit_1 = *digit;
-                highest_digit_1_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_1_index {
-                continue;
-            }
-            if highest_digit_2 < *digit && i < digits.len() - 10 {
-                highest_digit_2 = *digit;
-                highest_digit_2_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_2_index {
-                continue;
-            }
-            if highest_digit_3 < *digit && i < digits.len() - 9 {
-                highest_digit_3 = *digit;
-                highest_digit_3_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_3_index {
-                continue;
-            }
-            if highest_digit_4 < *digit && i < digits.len() - 8 {
-                highest_digit_4 = *digit;
-                highest_digit_4_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_4_index {
-                continue;
-            }
-            if highest_digit_5 < *digit && i < digits.len() - 7 {
-                highest_digit_5 = *digit;
-                highest_digit_5_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_5_index {
-                continue;
-            }
-            if highest_digit_6 < *digit && i < digits.len() - 6 {
-                highest_digit_6 = *digit;
-                highest_digit_6_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_6_index {
-                continue;
-            }
-            if highest_digit_7 < *digit && i < digits.len() - 5 {
-                highest_digit_7 = *digit;
-                highest_digit_7_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_7_index {
-                continue;
-            }
-            if highest_digit_8 < *digit && i < digits.len() - 4 {
-                highest_digit_8 = *digit;
-                highest_digit_8_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_8_index {
-                continue;
-            }
-            if highest_digit_9 < *digit && i < digits.len() - 3 {
-                highest_digit_9 = *digit;
-                highest_digit_9_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_9_index {
-                continue;
-            }
-            if highest_digit_10 < *digit && i < digits.len() - 2 {
-                highest_digit_10 = *digit;
-                highest_digit_10_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_10_index {
-                continue;
-            }
-            if highest_digit_11 < *digit && i < digits.len() - 1 {
-                highest_digit_11 = *digit;
-                highest_digit_11_index = i;
-            }
-        }
-        for (i, digit) in digits.iter().enumerate() {
-            if i <= highest_digit_11_index {
-                continue;
-            }
-            if highest_digit_12 < *digit {
-                highest_digit_12 = *digit;
-            }
-        }
+        let (highest_digit_1_index, highest_digit_1) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i < digits.len() - 11)
+            .fold((0, 0), fold_first_highest_digit);
+        let (highest_digit_2_index, highest_digit_2) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_1_index && i < digits.len() - 10)
+            .fold((0, 0), fold_first_highest_digit);
+        let (highest_digit_3_index, highest_digit_3) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_2_index && i < digits.len() - 9)
+            .fold((0, 0), fold_first_highest_digit);
+        let (highest_digit_4_index, highest_digit_4) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_3_index && i < digits.len() - 8)
+            .fold((0, 0), fold_first_highest_digit);
+        let (highest_digit_5_index, highest_digit_5) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_4_index && i < digits.len() - 7)
+            .fold((0, 0), fold_first_highest_digit);
+        let (highest_digit_6_index, highest_digit_6) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_5_index && i < digits.len() - 6)
+            .fold((0, 0), fold_first_highest_digit);
+        let (highest_digit_7_index, highest_digit_7) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_6_index && i < digits.len() - 5)
+            .fold((0, 0), fold_first_highest_digit);
+        let (highest_digit_8_index, highest_digit_8) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_7_index && i < digits.len() - 4)
+            .fold((0, 0), fold_first_highest_digit);
+        let (highest_digit_9_index, highest_digit_9) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_8_index && i < digits.len() - 3)
+            .fold((0, 0), fold_first_highest_digit);
+        let (highest_digit_10_index, highest_digit_10) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_9_index && i < digits.len() - 2)
+            .fold((0, 0), fold_first_highest_digit);
+        let (highest_digit_11_index, highest_digit_11) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_10_index && i < digits.len() - 1)
+            .fold((0, 0), fold_first_highest_digit);
+        let (_, highest_digit_12) = digits
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i > highest_digit_11_index)
+            .fold((0, 0), fold_first_highest_digit);
 
         total += format!("{highest_digit_1}{highest_digit_2}{highest_digit_3}{highest_digit_4}{highest_digit_5}{highest_digit_6}{highest_digit_7}{highest_digit_8}{highest_digit_9}{highest_digit_10}{highest_digit_11}{highest_digit_12}")
             .parse::<u128>()
